@@ -267,10 +267,15 @@
 
     <!-- Create Data Table : https://datatables.net/reference/option/ajax -->
     <script>
+    // Detailed data
     function format ( input_data ) {
         return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;" class="shown_table">'+
                  '<tr>'+
-                   '<td style="font-weight: bold;">Details Data of ' + input_data['Agent'] + '</td>'+
+                   '<td style="font-weight: bold;">Details Data of ' + 
+                     '<a href="host.html?agent=' + input_data['Agent'] + '" target="_blank">' +
+                       input_data['Agent'] +
+                     '</a>:' +
+                   '</td>'+
                  '</tr>'+
                '</table>';
     }
@@ -298,6 +303,9 @@
         $('#dataTables tbody').on('click', 'td.details-control', function () {
             var tr = $(this).closest('tr');
             var row = table.row( tr );
+
+            // Hide all shown details
+            console.log("index.html: hide shown columns")
             $(".shown_table").parent().hide();
             $(".shown").removeClass('shown');
 
@@ -307,6 +315,7 @@
                 tr.removeClass('shown');
             } else {
                 // Open this row
+                console.log("index.html: show selected column")
                 row.child( format(row.data()) ).show();
                 tr.addClass('shown');
             }

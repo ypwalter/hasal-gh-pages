@@ -10,14 +10,10 @@
 		},
 		"1508485586": {
 			"interactive": {
-				"100": {
+				"200": {
 					"status_code_desc": "Get command from interactive mode",
-					"utc_timestamp": "1508485586"
-				}
-			}
-		},
-		"1508485005": {
-			"interactive": {
+					"utc_timestamp": "1508485587"
+				},
 				"300": {
 					"list-job": {
 						"configs": {},
@@ -25,8 +21,12 @@
 						"desc": "list the current jobs"
 					},
 					"status_code_desc": "Execute scheduler realted command",
-					"utc_timestamp": "1508485005"
-				},
+					"utc_timestamp": "1508999999"
+				}
+			}
+		},
+		"1508485005": {
+			"interactive": {
 				"100": {
 					"status_code_desc": "Get command from interactive mode",
 					"utc_timestamp": "1508485005"

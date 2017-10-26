@@ -1,0 +1,68 @@
+// get current html name
+var path = window.location.pathname;
+var page = path.split("/").pop();
+
+// get agent name and set title
+var agent_name = get_request("agent");
+console.log(page + ": acquire agent name - " + agent_name);
+
+// adding getMax and getMin for Array
+Array.prototype.getMin = function(attrib) {
+    return this.reduce(function(prev, curr){ 
+        return prev[attrib] < curr[attrib] ? prev : curr; 
+    });
+}
+
+Array.prototype.getMax = function(attrib) {
+    return this.reduce(function(prev, curr){ 
+        return prev[attrib] > curr[attrib] ? prev : curr; 
+    });
+}
+
+// This is a funtion to get GET request
+function get_request(name) {
+    if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
+    return decodeURIComponent(name[1]);
+}
+
+// find min or max value
+// finder(Math.max, dt.status, function(x) { return parseInt(x.code); });
+function finder(cmp, arr, getter) {
+    var val = getter(arr[0]);
+    for(var i = 1; i < arr.length; i++) {
+        val = cmp(val, getter(arr[i]));
+    }
+    return val;
+}
+
+// This is used to translate data
+function translate_obj( data ) {
+    var table_data = {"data": []};
+    for (var type_key in data) {
+        var timestamp_data = data[type_key];
+
+        for (var timestamp in timestamp_data) {
+            var cmd_data = timestamp_data[timestamp];
+
+            for (var cmd in cmd_data) {
+                var status_data = cmd_data[cmd];
+                console.log(page + ": parsing data from \"" + type_key + "-" + timestamp + "-" + cmd + "\"");
+
+                // getting all the status data sets
+                additional_data = [];
+                for (var status in status_data) {
+                    // adding code in each status object
+                    status_data[status]["code"] = status;
+                    // storing status into an array so that I can put it in dictionary later
+                    additional_data.push(status_data[status]);
+                }
+
+                // push into total data set
+                data_set = {"type": type_key, "cmd": cmd, "start_ts": timestamp, "status": additional_data};
+                table_data["data"].push(data_set);
+            }
+
+        }
+    }
+    return table_data;
+}

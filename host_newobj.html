@@ -25,74 +25,9 @@
     <!-- Custom Fonts -->
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
-    <!-- Body -->
-    <style>
-        #title {
-            display: block;
-            font-size: 2.5em;
-            margin-top: 0.67em;
-            margin-bottom: 0.67em;
-            margin-left: 0;
-            margin-right: 0;
-            font-weight: bold;
-            text-align: center;
-        }
-    </style>
-
-    <!-- Table -->
-    <style>
-        .dataTables_wrapper {
-            margin: 0 auto;
-            width: 80%;
-        }
-        td.details-control {
-            background: url('../resources/details_open.png') no-repeat center center;
-            cursor: pointer;
-        }
-        tr.shown td.details-control {
-            background: url('../resources/details_close.png') no-repeat center center;
-        }
-    </style>
-
-</head>
-
-<body>
-
-    <div id="title"></div>
-
-    <!-- This is to get page html name -->
-    <script>
-        var path = window.location.pathname;
-        var page = path.split("/").pop();
-    </script>
-
-    <!-- Get Agent Name as Title -->
-    <script>
-        // This is a funtion to get GET request
-	    var get = function(name){
-	       if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
-	          return decodeURIComponent(name[1]);
-	    }
-
-        var agent_name = get("agent");
-        console.log(page + ": acquire agent name - " + agent_name);
-
-        document.getElementById("title").innerText = agent_name;
-    </script>
-
-    <!-- Main Table -->
-    <table id="dataTables" class="table table-bordered table-hover" cellspacing="0" width="100%">
-        <thead>
-            <tr>
-                <th></th>
-                <th>Type</th>
-                <th>Command</th>
-                <th>Start Time</th>
-                <th>Latest Updated Time</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-    </table>
+    <!-- Local Common JS/CSS Library by Walter -->
+    <link href="..\css\common.css" rel="stylesheet" type="text/css">
+    <script src="..\js\common.js"></script>
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
@@ -105,67 +40,40 @@
     <script src="https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.2.0/js/dataTables.responsive.min.js"></script>
 
-    <!-- Localforage -->
+    <!-- Localforage : Caching downloaded data-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.4.0/localforage.min.js"></script>
     <script src="..\js\cachedFetch.js"></script>
 
+</head>
+
+<body>
+
+    <div id="title"></div>
+
+    <!-- Get Agent Name as Title -->
+    <script>
+        document.getElementById("title").innerText = agent_name;
+        document.title = "Ejenti Dashboard : " + agent_name;
+    </script>
+
+    <!-- Main Table -->
+    <table id="dataTables" class="table table-bordered table-hover" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Type</th>
+                <th>Command</th>
+                <th>Start Time</th>
+                <th>Latest Updated Time</th>
+                <th>Status</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+    </table>
+
     <!-- load agent data and translated to new object format-->
     <script>
-        Array.prototype.getMin = function(attrib) {
-            return this.reduce(function(prev, curr){ 
-                return prev[attrib] < curr[attrib] ? prev : curr; 
-            });
-        }
-
-        Array.prototype.getMax = function(attrib) {
-            return this.reduce(function(prev, curr){ 
-                return prev[attrib] > curr[attrib] ? prev : curr; 
-            });
-        }
-
-        // find min or max value
-        // finder(Math.max, dt.status, function(x) { return parseInt(x.code); });
-        function finder(cmp, arr, getter) {
-            var val = getter(arr[0]);
-            for(var i = 1; i < arr.length; i++) {
-                val = cmp(val, getter(arr[i]));
-            }
-            return val;
-        }
-
-        // This is used to translate data
-        function translate_obj( data ) {
-            var table_data = {"data": []};
-            for (var type_key in data) {
-                var timestamp_data = data[type_key];
-
-                for (var timestamp in timestamp_data) {
-                    var cmd_data = timestamp_data[timestamp];
-
-                    for (var cmd in cmd_data) {
-                        var status_data = cmd_data[cmd];
-                        console.log(page + ": parsing data from \"" + type_key + "-" + timestamp + "-" + cmd + "\"");
-
-                        // getting all the status data sets
-                        additional_data = [];
-                        for (var status in status_data) {
-                            // adding code in each status object
-                            status_data[status]["code"] = status;
-                            // storing status into an array so that I can put it in dictionary later
-                            additional_data.push(status_data[status]);
-                        }
-
-                        // push into total data set
-                        data_set = {"type": type_key, "cmd": cmd, "start_ts": timestamp, "status": additional_data};
-                        table_data["data"].push(data_set);
-                    }
-
-                }
-            }
-            return table_data;
-        }
-
-        var cached_data = cachedFetch("http://10.247.120.201:8000/archived/agent-data.json");
+        var cached_data = cachedFetch("http://10.247.120.201:8000/data/agent-data.json");
         var additional_data = [];
         var translated_data = {"data": []};
 
@@ -173,14 +81,28 @@
         cached_data.then(function(data){
             console.log(page + ": got cached data for processing");
             var input = translate_obj(data);
-            console.log(input);
+            console.log(page + ": finished translating the original object");
 
             $(document).ready(function() {
-                // Transfer to array
+                // Transfer to array for main table to be constructed
                 var output = jQuery.map(input.data, function(dt, i) {
-                    latest_status = dt.status.getMax("code");
-                    last_status_code = finder(Math.max, dt.status, function(x) { return parseInt(x.code); });
-                    return [["", dt.type, dt.cmd, dt.start_ts, latest_status.code, latest_status.status_code_desc]];
+                    // var last_status_code = finder(Math.max, dt.status, function(x) { return parseInt(x.code); });
+                    var latest_status = dt.status.getMax("code");
+                    var start_datime = new Date(parseInt(dt.start_ts*1000)).toLocaleString("en-US");
+                    var last_datime = new Date(parseInt(latest_status.utc_timestamp*1000)).toLocaleString("en-US");
+                    
+                    // check status
+                    var status = "normal";
+                    if (latest_status.code != "900") {
+                        var time_diff = Date.now() - latest_status.utc_timestamp;
+                        if ( time_diff > 1000 * 60 * 60 * 12 ) {
+                            status = "error";
+                        } else if ( time_diff > 1000 * 60 * 60 * 6) {
+                            status = "warning";
+                        }
+                    }
+
+                    return [["", dt.type, dt.cmd, start_datime, last_datime, latest_status.code, latest_status.status_code_desc, status]];
                 });
 
                 // Entry point of agent data
@@ -196,22 +118,38 @@
                          { "sTitle": "Type" },
                          { "sTitle": "Command" },
                          { "sTitle": "Start Time" },
+                         { "sTitle": "Latest Update Time" },
                          { "sTitle": "Status Code"},
                          { "sTitle": "Status Description"}
-                    ],
-                    "order": [[1, 'asc']]
+                    ]
                 });
 
-                // Detailed data
+                // Set Table Color
+                var output_length = output.length;
+                for(var i = 0; i < output_length; i++) {
+                    if(output[i][output[i].length - 1] == "error") {
+                        console.log(output.length);
+                        $( "#dataTables tr:nth-child(" + (i+1) + ")" ).css( "background-color", "#f06666" );
+                    } else if(output[i][output[i].length - 1] == "warning") {
+                        console.log(output.length);
+                        $( "#dataTables tr:nth-child(" + (i+1) + ")" ).css( "background-color", "#f2f20b" );
+                    }
+                }
+
+                // Subarea: Detailed data
                 function format ( input_data ) {
-                    var filtered_data = input.data.filter((obj) => (obj.type == input_data[1]));
-                    console.log(filtered_data);
-                    return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;" class="shown_table">'+
-                             '<tr>'+
-                               '<td style="font-weight: bold;">Details Data' + 
-                               '</td>'+
-                             '</tr>'+
-                            '</table>';
+                    // check if (Type, Command, Start Time) pair is correct
+                    var filtered_data = input.data.filter((obj) => (obj.type == input_data[1]) && (obj.cmd == input_data[2]) && ((new Date(parseInt(obj.start_ts*1000)).toLocaleString("en-US")) == input_data[3]));
+                    var title = "<div style='font-weight: bold;'>Details Data:</div>";
+                    var content = "";
+                    var status = filtered_data[0]['status'];
+
+                    for(var i = 0; i < status.length; i++) {
+                        // Using toString() will return local time
+                        dtime = new Date(parseInt(status[0].utc_timestamp*1000)).toLocaleString("en-US");
+                        content += "<div>received " + status[i].code + " (" + status[i].status_code_desc + ") in " + dtime + "<\div>";
+                    }
+                    return '<div class="shown_table">' + title + content + '</div>';
                 };
 
                 // Add event listener for opening and closing details
@@ -219,17 +157,16 @@
                     var tr = $(this).closest('tr');
                     var row = table.row( tr );
 
-                    // Hide all shown details
-                    console.log(page + ": hide shown columns")
-                    $(".shown_table").parent().hide();
-                    $(".shown").removeClass('shown');
-
                     if ( row.child.isShown() ) {
                         // This row is already open - close it
                         row.child.hide();
                         tr.removeClass('shown');
                     } else {
-                        // Open this row
+                        // Hide all shown details
+                        console.log(page + ": hide shown columns")
+                        $(".shown_table").parent().hide();
+                        $(".shown").removeClass('shown');
+                        // Open detailed data for selected column
                         console.log(page + ": show selected column")
                         row.child( format(row.data()) ).show();
                         tr.addClass('shown');

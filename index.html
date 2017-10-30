@@ -54,7 +54,7 @@
         <div id="page-wrapper" style="margin: 0 0 0 0;">
             <div class="row">
                 <div class="col-lg-12">
-                    <h1 class="page-header" style="text-align:center;">Ejenti Dashboard - Agents</h1>
+                    <h1 class="page-header" style="text-align:center;">Ejenti Dashboard - Main</h1>
                 </div>
                 <!-- /.col-lg-12 -->
             </div>
@@ -153,7 +153,7 @@
             <div class="row">
                 <div class="col-lg-8">
                     <!-- panel -->
-                    <div class="panel panel-default">
+                    <div class="panel panel-info">
                         <div class="panel-heading">
                             <i class="fa fa-list-ul fa-fw"></i> Data Table
                         </div>
@@ -177,7 +177,7 @@
                 <!-- /.col-lg-8 -->
                 <div class="col-lg-4">
                     <!-- /.panel DISABLED for not having morris -->
-                    <div class="panel panel-default" style="display:none">
+                    <div class="panel panel-info" style="display:none">
                         <div class="panel-heading">
                             <i class="fa fa-bar-chart-o fa-fw"></i> Tests Distribution
                         </div>
@@ -189,13 +189,57 @@
                         <!-- /.panel-body -->
                     </div>
                     <!-- /.panel -->
-                    <div class="panel panel-default">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <i class="fa fa-user-secret fa-fw"></i> Build List
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body">
+                            <div class="list-group">
+                                <a href="#" class="list-group-item">
+                                    <i class="fa fa-user-circle fa-fw"></i> Build ID
+                                    <span class="pull-right text-muted small"><em>4 minutes ago</em>
+                                    </span>
+                                </a>
+                                <a href="#" class="list-group-item">
+                                    <i class="fa fa-user-circle fa-fw"></i> Build ID
+                                    <span class="pull-right text-muted small"><em>12 minutes ago</em>
+                                    </span>
+                                </a>
+                                <a href="#" class="list-group-item">
+                                    <i class="fa fa-user-circle fa-fw"></i> Build ID
+                                    <span class="pull-right text-muted small"><em>27 minutes ago</em>
+                                    </span>
+                                </a>
+                                <a href="#" class="list-group-item">
+                                    <i class="fa fa-user-circle fa-fw"></i> Build ID
+                                    <span class="pull-right text-muted small"><em>43 minutes ago</em>
+                                    </span>
+                                </a>
+                                <a href="#" class="list-group-item">
+                                    <i class="fa fa-user-circle fa-fw"></i> Build ID
+                                    <span class="pull-right text-muted small"><em>11:32 AM</em>
+                                    </span>
+                                </a>
+                                <a href="#" class="list-group-item">
+                                    <i class="fa fa-user-circle fa-fw"></i> Build ID
+                                    <span class="pull-right text-muted small"><em>11:13 AM</em>
+                                    </span>
+                                </a>
+                            </div>
+                            <!-- /.list-group -->
+                            <!-- <a href="#" class="btn btn-default btn-block">View All Alerts</a> -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <div class="panel panel-info">
                         <div class="panel-heading">
                             <i class="fa fa-bell fa-fw"></i> Notifications Panel
                         </div>
                         <!-- /.panel-heading -->
                         <div class="panel-body">
                             <div class="list-group">
+                                <!--
                                 <a href="#" class="list-group-item">
                                     <i class="fa fa-times fa-fw"></i> Error: w10-hp-r1-10
                                     <span class="pull-right text-muted small"><em>4 minutes ago</em>
@@ -226,6 +270,7 @@
                                     <span class="pull-right text-muted small"><em>11:13 AM</em>
                                     </span>
                                 </a>
+                                -->
                             </div>
                             <!-- /.list-group -->
                             <!-- <a href="#" class="btn btn-default btn-block">View All Alerts</a> -->
@@ -272,7 +317,7 @@
         return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;" class="shown_table">'+
                  '<tr>'+
                    '<td style="font-weight: bold;">Details Data of ' + 
-                     '<a href="host.html?agent=' + input_data['Agent'] + '" target="_blank">' +
+                     '<a href="host_newobj.html?agent=' + input_data['Agent'] + '" target="_blank">' +
                        input_data['Agent'] +
                      '</a>:' +
                    '</td>'+

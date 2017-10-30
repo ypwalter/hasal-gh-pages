@@ -2,7 +2,7 @@
 var path = window.location.pathname;
 var page = path.split("/").pop();
 
-// get agent name and set title
+// get agent name
 var agent_name = get_request("agent");
 console.log(page + ": acquire agent name - " + agent_name);
 

@@ -1,15 +1,14 @@
 {
 	"data": [
 		{ "Status":"Disconnected", "Agent":"w10-hp-r1-1", "Current Task":"Disconnected", "info":"None", "Error / Warning":"0" },
-		{ "Status":"Idle", "Agent":"w10-hp-r1-2", "Current Task":"Idle", "info":"None", "Error / Warning":"0" },
-		{ "Status":"Idle", "Agent":"w10-hp-r1-3", "Current Task":"Idle", "info":"None", "Error / Warning":"0" },
-		{ "Status":"Idle", "Agent":"w10-hp-r1-4", "Current Task":"Idle", "info":"None", "Error / Warning":"0" },
-		{ "Status":"Running", "Agent":"w10-hp-r1-5", "Current Task":"tests.regression.gdoc.test_chrome_gdoc_ail_pagedown_10_text", "info":"None", "Error / Warning":"0" },
-		{ "Status":"Running", "Agent":"w10-hp-r1-6", "Current Task":"tests.regression.gdoc.test_chrome_gdoc_ail_pagedown_10_text", "info":"None", "Error / Warning":"0" },
-		{ "Status":"Running", "Agent":"w10-hp-r1-7", "Current Task":"tests.regression.gdoc.test_chrome_gdoc_ail_pagedown_10_text", "info":"None", "Error / Warning":"0" },
-		{ "Status":"Running", "Agent":"w10-hp-r1-8", "Current Task":"tests.regression.gdoc.test_chrome_gdoc_ail_pagedown_10_text", "info":"None", "Error / Warning":"0" },
-		{ "Status":"Running", "Agent":"w10-hp-r1-9", "Current Task":"tests.regression.gdoc.test_chrome_gdoc_ail_pagedown_10_text", "info":"None", "Error / Warning":"0" },
-		{ "Status":"Running", "Agent":"w10-hp-r1-10", "Current Task":"tests.regression.gdoc.test_chrome_gdoc_ail_pagedown_10_text", "info":"None", "Error / Warning":"0" },
-		{ "Status":"Running", "Agent":"w10-hp-r1-11", "Current Task":"tests.regression.gdoc.test_chrome_gdoc_ail_pagedown_10_text", "info":"None", "Error / Warning":"0" }
+		{ "Status":"Disconnected", "Agent":"w10-hp-r1-2", "Current Task":"Disconnected", "info":"None", "Error / Warning":"0" },
+		{ "Status":"Disconnected", "Agent":"w10-hp-r1-3", "Current Task":"Disconnected", "info":"None", "Error / Warning":"0" },
+		{ "Status":"Disconnected", "Agent":"w10-hp-r1-4", "Current Task":"Disconnected", "info":"None", "Error / Warning":"0" },
+		{ "Status":"Running", "Agent":"w10-hp-r1-5", "Current Task":"task", "info":"None", "Error / Warning":"0" },
+		{ "Status":"Running", "Agent":"w10-hp-r1-6", "Current Task":"task", "info":"None", "Error / Warning":"0" },
+		{ "Status":"Running", "Agent":"w10-hp-r1-7", "Current Task":"task", "info":"None", "Error / Warning":"0" },
+		{ "Status":"Running", "Agent":"w10-hp-r1-8", "Current Task":"task", "info":"None", "Error / Warning":"0" },
+		{ "Status":"Running", "Agent":"w10-hp-r1-9", "Current Task":"task", "info":"None", "Error / Warning":"0" },
+		{ "Status":"Running", "Agent":"w10-hp-r1-10", "Current Task":"task", "info":"None", "Error / Warning":"0" }
 	]
 }

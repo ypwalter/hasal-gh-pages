@@ -8,7 +8,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Ejenti Dashboard - Agents</title>
+    <title>Ejenti Dashboard - Pulse Trigger Information</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
@@ -48,13 +48,7 @@
 
 <body>
 
-    <div id="title"></div>
-
-    <!-- Get Agent Name as Title -->
-    <script>
-        document.getElementById("title").innerText = agent_name;
-        document.title = "Ejenti Dashboard : " + agent_name;
-    </script>
+    <div id="title">Pulse Trigger Information</div>
 
     <!-- Main Table -->
     <table id="dataTables" class="table table-bordered table-hover" cellspacing="0" width="100%">
@@ -73,13 +67,13 @@
 
     <!-- load agent data and translated to new object format-->
     <script>
-        var cached_data = cachedFetch("http://10.247.120.201:8000/data/agent-data.json");
+        var cached_data = cachedFetch("http://10.247.120.201:8000/data/pulse-trigger.json");
         var additional_data = [];
-        var translated_data = {"data": []};
 
         // wait till fulfilled and started to handle data
         cached_data.then(function(data){
             console.log(page + ": got cached data for processing");
+            // input is the translated data
             var input = translate_obj(data);
             console.log(page + ": finished translating the original object");
 
@@ -102,10 +96,10 @@
                         }
                     }
 
-                    return [["", dt.type, dt.cmd, start_datime, last_datime, latest_status.code, latest_status.status_code_desc, status]];
+                    return [["", dt.type, latest_status.cmd, start_datime, last_datime, latest_status.code, latest_status.status_code_desc, status]];
                 });
 
-                // Entry point of agent data
+                // Entry point of pulse data to table
                 var table = $('#dataTables').DataTable({
                     "aaData": output,
                     "aoColumns": [
@@ -139,7 +133,10 @@
                 // Subarea: Detailed data
                 function format ( input_data ) {
                     // check if (Type, Command, Start Time) pair is correct
-                    var filtered_data = input.data.filter((obj) => (obj.type == input_data[1]) && (obj.cmd == input_data[2]) && ((new Date(parseInt(obj.start_ts*1000)).toLocaleString("en-US")) == input_data[3]));
+                    var filtered_data = input.data.filter((obj) => 
+                        (obj.type == input_data[1]) && 
+                        ((new Date(parseInt(obj.start_ts*1000)).toLocaleString("en-US")) == input_data[3]));
+
                     var title = "<div style='font-weight: bold;'>Details Data:</div>";
                     var content = "";
                     var status = filtered_data[0]['status'];

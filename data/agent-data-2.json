@@ -8,17 +8,17 @@
                 {
                     "code": "100",
                     "description": "Get command from interactive mode",
-                    "ts": "1234567898"
+                    "utc-timestamp": "1234567898"
                 },
                 {
                     "code": "200",
                     "description": "Get command from interactive mode",
-                    "ts": "1234567899"
+                    "utc-timestamp": "1234567899"
                 },
                 {
                     "code": "900",
                     "description": "Get command from interactive mode",
-                    "ts": "1234567900"
+                    "utc-timestamp": "1234567900"
                 }
             ]
         },
@@ -30,12 +30,12 @@
                 {
                     "code": "100",
                     "description": "Get command from interactive mode",
-                    "ts": "1234567898"
+                    "utc-timestamp": "1234567898"
                 },
                 {
                     "code": "300",
                     "description": "Get command from interactive mode",
-                    "ts": "1234567899"
+                    "utc-timestamp": "1234567899"
                 }
             ]
         },
@@ -47,7 +47,7 @@
                 {
                     "code": "100",
                     "description": "Get command from interactive mode",
-                    "ts": "1234567898"
+                    "utc-timestamp": "1234567898"
                 }
             ]
         }

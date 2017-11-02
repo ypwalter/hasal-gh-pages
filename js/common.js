@@ -6,6 +6,10 @@ var page = path.split("/").pop();
 var agent_name = get_request("agent");
 console.log(page + ": acquire agent name - " + agent_name);
 
+// get build name
+var build_id = get_request("build");
+console.log(page + ": acquire build id - " + build_id);
+
 // adding getMax and getMin for Array
 Array.prototype.getMin = function(attrib) {
     return this.reduce(function(prev, curr){ 
@@ -19,7 +23,7 @@ Array.prototype.getMax = function(attrib) {
     });
 }
 
-// This is a funtion to get GET request
+// This is a funtion to handle GET request
 function get_request(name) {
     if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
     return decodeURIComponent(name[1]);
@@ -35,7 +39,23 @@ function finder(cmp, arr, getter) {
     return val;
 }
 
-// This is used to translate data
+// find key in object and return obj
+// var test = {'level1':{'level2':{'level3':'level3'}} };
+// checkNested(test, 'level1', 'level2', 'level3');
+
+function checkNested(obj /*, level1, level2, ... levelN*/) {
+  var args = Array.prototype.slice.call(arguments, 1);
+
+  for (var i = 0; i < args.length; i++) {
+    if (!obj || !obj.hasOwnProperty(args[i])) {
+      return false;
+    }
+    obj = obj[args[i]];
+  }
+  return obj;
+}
+
+// This is used to translate data ( Shako's old format )
 function translate_obj( data ) {
     var table_data = {"data": []};
     for (var type_key in data) {

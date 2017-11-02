@@ -21,7 +21,8 @@
 						"desc": "list the current jobs"
 					},
 					"status_code_desc": "Execute scheduler realted command",
-					"utc_timestamp": "1508999999"
+					"utc_timestamp": "1508999999",
+                                        "task_uid": "2017-10-25_18:22:43.859478.win7_x64.2"
 				}
 			}
 		},
@@ -54,7 +55,8 @@
 				},
 				"900": {
 					"status_code_desc": "Successfully complete",
-					"utc_timestamp": "1508484584"
+					"utc_timestamp": "1508484584",
+                                        "task_uid": "2017-10-26_10:46:14.102753.win7_x64.2"
 				}
 			}
 		},
@@ -71,7 +73,8 @@
 				},
 				"100": {
 					"status_code_desc": "Get command from interactive mode",
-					"utc_timestamp": "1508485575"
+					"utc_timestamp": "1508485575",
+                                        "task_uid": "2017-10-26_10:46:14.102753.win7_x64.1"
 				},
 				"900": {
 					"status_code_desc": "Successfully complete",

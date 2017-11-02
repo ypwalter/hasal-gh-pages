@@ -20,7 +20,7 @@
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
     <!-- Local Common JS/CSS Library by Walter -->
-    <link href="..\css\common.css" rel="stylesheet" type="text/css">
+    <link href="..\css\build_info.css" rel="stylesheet" type="text/css">
     <script src="..\js\common.js"></script>
 
     <!-- jQuery -->
@@ -44,53 +44,275 @@
 
     <div id="title">Build Information</div>
 
-<!-- /.col-lg-12 -->
-<div style="margin: 0 auto;width: 80%;">
-    <div class="col-lg-12">
-        <div class="panel panel-default">
-            <div class="panel-heading" style="text-align:center;">
-                <h4>(Build ID)</h4>
-            </div>
-            <!-- /.panel-heading -->
-            <div class="panel-body">
-                <!-- Nav tabs -->
-                <ul class="nav nav-pills">
-                    <li class="active"><a href="#home-pills" data-toggle="tab">Basic Information</a>
-                    </li>
-                    <li><a href="#profile-pills" data-toggle="tab">Current Runs</a>
-                    </li>
-                    <li><a href="#messages-pills" data-toggle="tab">Tab 3</a>
-                    </li>
-                    <li><a href="#settings-pills" data-toggle="tab">Tab 4</a>
-                    </li>
-                </ul>
+    <!-- /.col-lg-12 -->
+    <div style="margin: 0 auto;width: 80%;">
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-heading" style="text-align:center;">
+                    <h4><select id="build_dropdownlist" style="display:none;"></select><script>document.write(build_id);</script></h4>
+                </div>
+                <!-- /.panel-heading -->
+                <div class="panel-body">
+                    <!-- Nav tabs -->
+                    <ul class="nav nav-pills">
+                        <li class="active"><a href="#home-pills" data-toggle="tab">Basic Information</a>
+                        </li>
+                        <li><a href="#profile-pills" data-toggle="tab">Current Runs</a>
+                        </li>
+                        <li><a href="#messages-pills" data-toggle="tab">Tab 3</a>
+                        </li>
+                        <li><a href="#settings-pills" data-toggle="tab">Tab 4</a>
+                        </li>
+                    </ul>
 
-                <!-- Tab panes -->
-                <div class="tab-content">
-                    <div class="tab-pane fade in active" id="home-pills">
-                        <h4>Agent Information, Pulse Trigger Information, Build Information</h4>
-                        <p></p>
-                    </div>
-                    <div class="tab-pane fade" id="profile-pills">
-                        <h4>This should display current build run status</h4>
-                        <p></p>
-                    </div>
-                    <div class="tab-pane fade" id="messages-pills">
-                        <h4>Tab 3</h4>
-                        <p></p>
-                    </div>
-                    <div class="tab-pane fade" id="settings-pills">
-                        <h4>Tab 4</h4>
-                        <p></p>
+                    <!-- Tab panes -->
+                    <div class="tab-content">
+                        <div class="tab-pane fade in active" id="home-pills">
+                            <h4>Agent Information, Pulse Trigger Information, Build Information</h4>
+                            <p></p>
+                        </div>
+                        <div class="tab-pane fade" id="profile-pills">
+                            <br/>
+                            <!-- Main Table -->
+                            <table id="dataTables" class="table table-bordered table-hover" cellspacing="0" width="100%">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Task UID</th>
+                                        <th>Test Cases</th>
+                                        <th>Status</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                        <div class="tab-pane fade" id="messages-pills">
+                            <h4>Tab 3</h4>
+                            <p></p>
+                        </div>
+                        <div class="tab-pane fade" id="settings-pills">
+                            <h4>Tab 4</h4>
+                            <p></p>
+                        </div>
                     </div>
                 </div>
+                <!-- /.panel-body -->
             </div>
-            <!-- /.panel-body -->
+            <!-- /.panel -->
         </div>
-        <!-- /.panel -->
     </div>
-</div>
-<!-- /.col-lg-12 -->
+    <!-- /.col-lg-12 -->
+
+
+    <script>
+        var pulse_trigger = cachedFetch("http://10.247.120.201:8000/data/w10-hp-r1-1_recently.json", 0);
+        //friendly url - https://f001.backblazeb2.com/file/HasalAgentStatus/user-PC_recently.json
+        var agent_data = cachedFetch("http://10.247.120.201:8000/data/user-PC_recently_new.json", 0);
+        var build_list = [];
+        var uid_to_trigger_table = {};
+        var uid_to_trigger_info = {};
+        var uid_to_case_list = {};
+        var uid_to_agent_info = {};
+
+        // wait till fully fetched pulse trigger data and agent data
+        pulse_trigger.then(function(pulse_data) {
+            console.log(page + ": got cached pulse trigger data for processing");
+            agent_data.then(function(agent_data) {
+                console.log(page + ": got cached agent data for processing");
+
+                // translating data (can be removed once the data format is done)
+                // var translated_pulse = translate_obj(pulse_data);
+                // var translated_agent = translate_obj(agent_data);
+                var translated_pulse = pulse_data;
+                var translated_agent = agent_data;
+
+                // get data sets according to latest status (handling pulse trigger data)
+                var latest_trigger_status = jQuery.map(translated_pulse.data, function(trigger_dt, i) {
+                    // get latest status of each set of status
+                    var latest_status = trigger_dt.status.getMax("utc_timestamp");
+
+                    // get build information and cases list
+                    var build_info = "";
+                    var case_list = [];
+                    if ("cmd_config" in latest_status) {
+                        if ("DOWNLOAD_REVISION" in latest_status["cmd_config"]) {
+                            build_info = latest_status["cmd_config"]["DOWNLOAD_REVISION"];
+                            // if build revision is not in build rev list, put it in
+                            if ($.inArray(build_info, build_list) == (-1)) {
+                                build_list.push(build_info);
+                            }
+                        }
+                        if ("OVERWRITE_HASAL_SUITE_CASE_LIST" in latest_status["cmd_config"]) {
+                            case_list = latest_status["cmd_config"]["OVERWRITE_HASAL_SUITE_CASE_LIST"];
+                        }
+                    } else {
+                        return [];
+                    }
+
+                    // make test cases readable if possible (not currently using this)
+                    // TODO: need to have a better logic here
+                    var final_case = "";
+                    if((case_list.length == 2)) {
+                        case_path = case_list[0].split(".");
+                        case_type = case_path[1];
+                        full_case_name_list = case_path[3].split("_");
+                        full_case_name_list.splice(0, 2);
+                        case_name = full_case_name_list.join([separator = "_"]);
+                        final_case = case_type + ":" + case_name; 
+                    }
+
+                    // separate by UID
+                    var return_array = [];
+                    if (("task_uid_list" in latest_status) && (build_info != "") && (build_info == build_id)) {
+                        var uid_list = latest_status.task_uid_list;
+                        for (var i = 0; i < uid_list.length; i++) {
+                            //TODO: I might no longer need to table data here
+                            table_data = ["", uid_list[i], final_case, latest_status.code, latest_status.status_code_desc];
+                            uid_to_case_list[uid_list[i]] = case_list;
+                            uid_to_trigger_info[uid_list[i]] = latest_status;
+                            uid_to_trigger_table[uid_list[i]] = table_data;
+                            return_array.push(table_data);
+                        }
+                    }
+
+                    return return_array;
+                });
+                // end of handling trigger data
+
+                // handling agent data
+                var latest_agent_status = jQuery.map(translated_agent.data, function(agent_dt, i) {
+                    // get latest status of each set of status
+                    var latest_status = agent_dt.status.getMax("utc_timestamp");
+
+                    // get task uid
+                    var task_uid = "";
+                    for (var i = 0; i < agent_dt.status.length; i++) {
+                        if("task_uid" in agent_dt.status[i]) {
+                            task_uid = agent_dt.status[i]["task_uid"];
+                            break;
+                        }
+                    }
+
+                    // TODO: remove this debugging block if this is going to release
+                    // DEBUGGING information: false = no showing
+                    if (task_uid != "" && false) {
+                        console.log(task_uid);
+                        console.log(latest_status);
+                        console.log(agent_dt.status);
+                        console.log(agent_dt);
+                        return [];
+                    }
+
+                    // TODO: need to handle from file name later
+                    var agent_name = "";
+
+
+                    var return_array = [];
+
+                    // filtered out if there is no task_uid
+                    if (task_uid != "") {
+                        table_data = [agent_name, task_uid, agent_dt.type, agent_dt.cmd, agent_dt.start_ts,
+                                      agent_dt.status,  latest_status.utc_timestamp, latest_status.code, latest_status.status_code_desc];
+                        uid_to_agent_info[task_uid] = table_data;
+                        return_array.push(table_data);
+                    }
+
+                    return return_array;
+                });
+                // end of handling agent data
+
+                console.log(latest_agent_status);
+
+                // Table: wait till document ready and start to construct table
+                $(document).ready(function() {
+                    var select = document.getElementById("build_dropdownlist");
+                    for ( i = 0; i < build_list.length; i++ ) {
+                        option = document.createElement( 'option' );
+                        option.value = option.text = build_list[i];
+                        select.add( option );
+                    }
+
+                    // Entry point of building table
+                    var table = $('#dataTables').DataTable({
+                        "aaData": latest_trigger_status,
+                        "aoColumns": [
+                             {
+                                 "className":      "details-control",
+                                 "orderable":      false,
+                                 "data":           null,
+                                 "defaultContent": ''
+                             },
+                             { "sTitle": "Task UID" },
+                             { "sTitle": "Test Cases" },
+                             { "sTitle": "Status"},
+                             { "sTitle": "Status Description"}
+                        ],
+                        "autoWidth": false
+                    });
+
+                    // Add event listener for opening and closing details
+                    $('#dataTables tbody').on('click', 'td.details-control', function () {
+                        var tr = $(this).closest('tr');
+                        var row = table.row( tr );
+
+                        if ( row.child.isShown() ) {
+                            // This row is already open - close it
+                            row.child.hide();
+                            tr.removeClass('shown');
+                        } else {
+                            // Hide all shown details
+                            console.log(page + ": hide shown columns")
+                            $(".shown_table").parent().hide();
+                            $(".shown").removeClass('shown');
+                            // Open detailed data for selected column
+                            console.log(page + ": show selected column")
+                            row.child( format(row.data()) ).show();
+                            tr.addClass('shown');
+                        }
+                    });
+
+                // Subarea: Detailed data
+                function format ( input_column ) {
+                    var task_uid = input_column[1];
+                    var title = "<div style='font-weight: bold;'>Details Data:</div>";
+
+                    // getting and output related agent information
+                    var agent_info = "";
+                    var status_code = "";
+                    var status_code_desc = "";
+                    if (task_uid in uid_to_agent_info) {
+                        agent_info = uid_to_agent_info[task_uid][0];
+                        status_code = uid_to_agent_info[task_uid][2];
+                        status_code_desc = uid_to_agent_info[task_uid][3];
+                    } else {
+                        agent_info = "No matching agent found";
+                    }
+                    var content = agent_info + " " + status_code + " " + status_code_desc;
+
+                    // getting and output related pulse trigger information
+                    var trigger_content = "";
+                    if (task_uid in uid_to_trigger_info) {
+                        if ("cmd" in uid_to_trigger_info[task_uid]) {
+                            trigger_cmd = uid_to_trigger_info[task_uid]["cmd"];
+                            trigger_cmd_config = uid_to_trigger_info[task_uid]["cmd_config"];
+                            trigger_content = trigger_cmd + "<br\>" ;
+                        } else {
+                            trigger_content = "No futher details";
+                        }
+                    }
+
+                    // return created detailed information area
+                    return '<div class="shown_table">' + title + content + '<br/>' + trigger_content +'</div>';
+                };
+
+
+                });
+
+            });
+        });
+
+    </script>
+
 
 </body>
 

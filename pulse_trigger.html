@@ -67,14 +67,15 @@
 
     <!-- load agent data and translated to new object format-->
     <script>
-        var cached_data = cachedFetch("http://10.247.120.201:8000/data/pulse-trigger.json");
+        var cached_data = cachedFetch("http://10.247.120.201:8000/data/w10-hp-r1-1_recently.json");
         var additional_data = [];
 
         // wait till fulfilled and started to handle data
         cached_data.then(function(data){
             console.log(page + ": got cached data for processing");
-            // input is the translated data
-            var input = translate_obj(data);
+            // input is the translated data now, it doesn't need to be translated
+            // var input = translate_obj(data);
+            var input = data;
             console.log(page + ": finished translating the original object");
 
             $(document).ready(function() {

@@ -49,7 +49,7 @@
         <div class="col-lg-12">
             <div class="panel panel-default">
                 <div class="panel-heading" style="text-align:center;">
-                    <h4><select id="build_dropdownlist" style="display:none;"></select><script>document.write(build_id);</script></h4>
+                    <h4><script>document.write(build_id);</script></h4>
                 </div>
                 <!-- /.panel-heading -->
                 <div class="panel-body">
@@ -105,10 +105,11 @@
 
 
     <script>
-        var pulse_trigger = cachedFetch("http://10.247.120.201:8000/data/w10-hp-r1-1_recently.json", 0);
+        var pulse_trigger = cachedFetch("http://10.247.120.201:8000/data/Askeings-MacBook-Pro.local_recently.json", 0);
         //friendly url - https://f001.backblazeb2.com/file/HasalAgentStatus/user-PC_recently.json
         var agent_data = cachedFetch("http://10.247.120.201:8000/data/user-PC_recently_new.json", 0);
         var build_list = [];
+        var tuid = {};
         var uid_to_trigger_table = {};
         var uid_to_trigger_info = {};
         var uid_to_case_list = {};
@@ -126,7 +127,7 @@
                 var translated_pulse = pulse_data;
                 var translated_agent = agent_data;
 
-                // get data sets according to latest status (handling pulse trigger data)
+                // BEGIN handling pulse trigger data
                 var latest_trigger_status = jQuery.map(translated_pulse.data, function(trigger_dt, i) {
                     // get latest status of each set of status
                     var latest_status = trigger_dt.status.getMax("utc_timestamp");
@@ -137,10 +138,6 @@
                     if ("cmd_config" in latest_status) {
                         if ("DOWNLOAD_REVISION" in latest_status["cmd_config"]) {
                             build_info = latest_status["cmd_config"]["DOWNLOAD_REVISION"];
-                            // if build revision is not in build rev list, put it in
-                            if ($.inArray(build_info, build_list) == (-1)) {
-                                build_list.push(build_info);
-                            }
                         }
                         if ("OVERWRITE_HASAL_SUITE_CASE_LIST" in latest_status["cmd_config"]) {
                             case_list = latest_status["cmd_config"]["OVERWRITE_HASAL_SUITE_CASE_LIST"];
@@ -163,7 +160,7 @@
 
                     // separate by UID
                     var return_array = [];
-                    if (("task_uid_list" in latest_status) && (build_info != "") && (build_info == build_id)) {
+                    if (("task_uid_list" in latest_status) && (build_info != "")) {
                         var uid_list = latest_status.task_uid_list;
                         for (var i = 0; i < uid_list.length; i++) {
                             //TODO: I might no longer need to table data here
@@ -177,60 +174,97 @@
 
                     return return_array;
                 });
-                // end of handling trigger data
+                // END handling trigger data
+                console.log(latest_trigger_status);
 
-                // handling agent data
-                var latest_agent_status = jQuery.map(translated_agent.data, function(agent_dt, i) {
-                    // get latest status of each set of status
-                    var latest_status = agent_dt.status.getMax("utc_timestamp");
 
-                    // get task uid
-                    var task_uid = "";
-                    for (var i = 0; i < agent_dt.status.length; i++) {
-                        if("task_uid" in agent_dt.status[i]) {
-                            task_uid = agent_dt.status[i]["task_uid"];
-                            break;
+                // BEGIN handling agent data
+                // lookup dict for task uid
+                for(var i = 0; i < translated_agent.data.length; i++) {
+                    set = translated_agent.data[i];
+                    for (var j = 0; j < set.status.length; j++) {
+                        stat = set.status[j];
+                        if(("task_uid" in stat)) {
+                            tuid[set.start_ts] = {};
+                            tuid[set.start_ts][set.type] = stat.task_uid;
                         }
                     }
+                }
 
-                    // TODO: remove this debugging block if this is going to release
-                    // DEBUGGING information: false = no showing
-                    if (task_uid != "" && false) {
-                        console.log(task_uid);
-                        console.log(latest_status);
-                        console.log(agent_dt.status);
-                        console.log(agent_dt);
+                var latest_agent_status = jQuery.map(translated_agent.data, function(agent_dt, i) {
+                    var return_array = [];
+
+                    // get task uid
+                    var task_uid = ""
+                    if (agent_dt.start_ts in tuid) {
+                        task_uid = tuid[agent_dt.start_ts][agent_dt.type];
+                    } else {
                         return [];
                     }
 
                     // TODO: need to handle from file name later
                     var agent_name = "";
 
-
-                    var return_array = [];
-
-                    // filtered out if there is no task_uid
-                    if (task_uid != "") {
-                        table_data = [agent_name, task_uid, agent_dt.type, agent_dt.cmd, agent_dt.start_ts,
-                                      agent_dt.status,  latest_status.utc_timestamp, latest_status.code, latest_status.status_code_desc];
-                        uid_to_agent_info[task_uid] = table_data;
+                    function _push_data() {
+                        table_data = [agent_name, agent_dt.type, agent_dt.cmd, agent_dt.start_ts,
+                                      current_case, current_ts, current_status_desc, current_status];
+                        if (! (task_uid in uid_to_agent_info)) {
+                            uid_to_agent_info[task_uid] = [];
+                        }
+                        uid_to_agent_info[task_uid].push(table_data);
                         return_array.push(table_data);
+                        return table_data;
+                    }
+
+                    function _reset_variables() {
+                        current_case = "";
+                        current_status = -1;
+                        current_status_desc = "";
+                        current_ts = -1;
+                    }
+
+                    // output final status
+                    // (old)table_data = [agent_name, task_uid, agent_dt.type, agent_dt.cmd, agent_dt.start_ts, current_case,
+                    //                    agent_dt.status,  current_ts, current_status_desc, current_status];
+                    // check if multiple status exists
+                    var current_case = "";
+                    var current_status = -1;
+                    var current_status_desc = "";
+                    var current_ts = -1;
+                    agent_dt.status.sort((a, b) => (a.utc_timestamp <= b.utc_timestamp) ? -1 : 1);
+                    for (var i = 0; i < agent_dt.status.length; i++) {
+                        status_data = agent_dt.status[i];
+                        console.log(status_data.utc_timestamp);
+                        console.log(status_data.code);
+                        if (status_data.code > current_status) {
+                            if("case_name" in status_data) {
+                                current_case = status_data["case_name"];
+                            }
+                            current_status = status_data.code;
+                            current_status_desc = status_data.status_code_desc;
+                            current_ts = status_data.utc_timestamp;
+                        } else {
+                            if (status_data.code == 100) {
+                                _push_data();
+                                _reset_variables();
+                            }
+                            if("case_name" in status_data) {
+                                current_case = status_data["case_name"];
+                            }
+                        }
+                    }
+
+                    if (current_ts != (-1)) {
+                        _push_data();
                     }
 
                     return return_array;
                 });
-                // end of handling agent data
-
+                // END handling agent data
                 console.log(latest_agent_status);
 
                 // Table: wait till document ready and start to construct table
                 $(document).ready(function() {
-                    var select = document.getElementById("build_dropdownlist");
-                    for ( i = 0; i < build_list.length; i++ ) {
-                        option = document.createElement( 'option' );
-                        option.value = option.text = build_list[i];
-                        select.add( option );
-                    }
 
                     // Entry point of building table
                     var table = $('#dataTables').DataTable({
@@ -266,46 +300,52 @@
                             $(".shown").removeClass('shown');
                             // Open detailed data for selected column
                             console.log(page + ": show selected column")
-                            row.child( format(row.data()) ).show();
+                            row.child( format() ).show();
+                            fill_data(row.data());
                             tr.addClass('shown');
                         }
                     });
 
-                // Subarea: Detailed data
-                function format ( input_column ) {
-                    var task_uid = input_column[1];
-                    var title = "<div style='font-weight: bold;'>Details Data:</div>";
+                    // Subarea: Detailed datatable
+                    function format () {
+                        detailed_table = '<table id="detailedTable" class="table table-bordered table-hover" cellspacing="0" width="100%"><thead><tr>' +
+                                         '<th></th>' +
+                                         '<th></th>' +
+                                         '<th></th>' +
+                                         '<th></th>' +
+                                         '<th></th>' +
+                                         '<th></th>' +
+                                         '<th></th>' +
+                                         '<th></th>' +
+                                         '</tr></thead></table>';
 
-                    // getting and output related agent information
-                    var agent_info = "";
-                    var status_code = "";
-                    var status_code_desc = "";
-                    if (task_uid in uid_to_agent_info) {
-                        agent_info = uid_to_agent_info[task_uid][0];
-                        status_code = uid_to_agent_info[task_uid][2];
-                        status_code_desc = uid_to_agent_info[task_uid][3];
-                    } else {
-                        agent_info = "No matching agent found";
-                    }
-                    var content = agent_info + " " + status_code + " " + status_code_desc;
+                        // return created information area
+                        return detailed_table;
+                    };
 
-                    // getting and output related pulse trigger information
-                    var trigger_content = "";
-                    if (task_uid in uid_to_trigger_info) {
-                        if ("cmd" in uid_to_trigger_info[task_uid]) {
-                            trigger_cmd = uid_to_trigger_info[task_uid]["cmd"];
-                            trigger_cmd_config = uid_to_trigger_info[task_uid]["cmd_config"];
-                            trigger_content = trigger_cmd + "<br\>" ;
-                        } else {
-                            trigger_content = "No futher details";
-                        }
-                    }
+                    // Subarea: fill detailed data
+                    function fill_data (input_column) {
+                        var task_uid = input_column[1];
+                        console.log(uid_to_agent_info[task_uid]);
 
-                    // return created detailed information area
-                    return '<div class="shown_table">' + title + content + '<br/>' + trigger_content +'</div>';
-                };
+                        var table2 = $('#detailedTable').DataTable({
+                            "aaData": uid_to_agent_info[task_uid],
+                            "aoColumns": [
+                                 { "sTitle": "Agent" },
+                                 { "sTitle": "Type" },
+                                 { "sTitle": "Command"},
+                                 { "sTitle": "Start Time"},
+                                 { "sTitle": "Test Case" },
+                                 { "sTitle": "Latest Time" },
+                                 { "sTitle": "Status Description"},
+                                 { "sTitle": "Status Code"}
+                            ],
+                            "order": [[ 5, "asc" ]],
+                            "autoWidth": false
+                        });
 
-
+                        return true;
+                    };
                 });
 
             });

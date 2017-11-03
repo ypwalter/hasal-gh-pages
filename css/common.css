@@ -23,3 +23,5 @@ tr.shown td.details-control {
 
 th { font-size: 18px; }
 td { font-size: 16px; }
+
+td.xsmall { font-size: x-small; }

@@ -110,10 +110,7 @@
         var agent_data = cachedFetch("http://10.247.120.201:8000/data/user-PC_recently_new.json", 0);
         var build_list = [];
         var tuid = {};
-        var uid_to_trigger_table = {};
-        var uid_to_trigger_info = {};
-        var uid_to_case_list = {};
-        var uid_to_agent_info = {};
+        var uid_to_status_info = {};
 
         // wait till fully fetched pulse trigger data and agent data
         pulse_trigger.then(function(pulse_data) {
@@ -165,9 +162,6 @@
                         for (var i = 0; i < uid_list.length; i++) {
                             //TODO: I might no longer need to table data here
                             table_data = ["", uid_list[i], final_case, latest_status.code, latest_status.status_code_desc];
-                            uid_to_case_list[uid_list[i]] = case_list;
-                            uid_to_trigger_info[uid_list[i]] = latest_status;
-                            uid_to_trigger_table[uid_list[i]] = table_data;
                             return_array.push(table_data);
                         }
                     }
@@ -175,8 +169,6 @@
                     return return_array;
                 });
                 // END handling trigger data
-                console.log(latest_trigger_status);
-
 
                 // BEGIN handling agent data
                 // lookup dict for task uid
@@ -207,11 +199,12 @@
 
                     function _push_data() {
                         table_data = [agent_name, agent_dt.type, agent_dt.cmd, agent_dt.start_ts,
-                                      current_case, current_ts, current_status_desc, current_status];
-                        if (! (task_uid in uid_to_agent_info)) {
-                            uid_to_agent_info[task_uid] = [];
+                                      current_case, current_ts, (new Date(current_ts*1000).toLocaleString()),
+                                      current_status_desc, current_status, task_uid, agent_dt.status];
+                        if (! (task_uid in uid_to_status_info)) {
+                            uid_to_status_info[task_uid] = [];
                         }
-                        uid_to_agent_info[task_uid].push(table_data);
+                        uid_to_status_info[task_uid].push(table_data);
                         return_array.push(table_data);
                         return table_data;
                     }
@@ -234,8 +227,6 @@
                     agent_dt.status.sort((a, b) => (a.utc_timestamp <= b.utc_timestamp) ? -1 : 1);
                     for (var i = 0; i < agent_dt.status.length; i++) {
                         status_data = agent_dt.status[i];
-                        console.log(status_data.utc_timestamp);
-                        console.log(status_data.code);
                         if (status_data.code > current_status) {
                             if("case_name" in status_data) {
                                 current_case = status_data["case_name"];
@@ -261,7 +252,6 @@
                     return return_array;
                 });
                 // END handling agent data
-                console.log(latest_agent_status);
 
                 // Table: wait till document ready and start to construct table
                 $(document).ready(function() {
@@ -294,29 +284,30 @@
                             row.child.hide();
                             tr.removeClass('shown');
                         } else {
-                            // Hide all shown details
-                            console.log(page + ": hide shown columns")
-                            $(".shown_table").parent().hide();
-                            $(".shown").removeClass('shown');
                             // Open detailed data for selected column
                             console.log(page + ": show selected column")
-                            row.child( format() ).show();
+                            row.child( format( row.data() ) ).show();
                             fill_data(row.data());
-                            tr.addClass('shown');
                         }
+                        $('#detailedTable tbody').on('click', '.more', function () {
+                            detailed_status = table2.row($(this).parent()).data()[10];
+
+                            var win = window.open("statusInfo", "statusInfo", "width=600, height=400, toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no, titlebar=no" );
+                            var doc = win.document;
+                            doc.open("application/json");
+                            doc.write(JSON.stringify(detailed_status, null, 4));
+                            doc.close();
+                            win.focus();
+                        });
                     });
 
+
                     // Subarea: Detailed datatable
-                    function format () {
+                    function format (input_column) {
+                        var task_uid = input_column[1];;
                         detailed_table = '<table id="detailedTable" class="table table-bordered table-hover" cellspacing="0" width="100%"><thead><tr>' +
-                                         '<th></th>' +
-                                         '<th></th>' +
-                                         '<th></th>' +
-                                         '<th></th>' +
-                                         '<th></th>' +
-                                         '<th></th>' +
-                                         '<th></th>' +
-                                         '<th></th>' +
+                                         '<th></th> <th></th> <th></th> <th></th> <th></th>' +
+                                         '<th></th> <th></th> <th></th> <th></th> <th></th>' +
                                          '</tr></thead></table>';
 
                         // return created information area
@@ -324,21 +315,23 @@
                     };
 
                     // Subarea: fill detailed data
+                    var table2;
                     function fill_data (input_column) {
                         var task_uid = input_column[1];
-                        console.log(uid_to_agent_info[task_uid]);
 
-                        var table2 = $('#detailedTable').DataTable({
-                            "aaData": uid_to_agent_info[task_uid],
+                        table2 = $('#detailedTable').DataTable({
+                            "aaData": uid_to_status_info[task_uid],
                             "aoColumns": [
                                  { "sTitle": "Agent" },
                                  { "sTitle": "Type" },
-                                 { "sTitle": "Command"},
-                                 { "sTitle": "Start Time"},
+                                 { "sTitle": "Command" },
+                                 { "sTitle": "Start Timestamp", "bVisible": false },
                                  { "sTitle": "Test Case" },
+                                 { "sTitle": "Latest Timestamp", "bVisible": false },
                                  { "sTitle": "Latest Time" },
-                                 { "sTitle": "Status Description"},
-                                 { "sTitle": "Status Code"}
+                                 { "sTitle": "Status Description", "sClass": "more" },
+                                 { "sTitle": "Status"},
+                                 { "sTitle": "Uid", "bVisible": false}
                             ],
                             "order": [[ 5, "asc" ]],
                             "autoWidth": false

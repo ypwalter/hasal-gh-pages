@@ -26,8 +26,8 @@
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
     <!-- Local Common JS/CSS Library by Walter -->
-    <link href="..\css\common.css" rel="stylesheet" type="text/css">
-    <script src="..\js\common.js"></script>
+    <link href="css\build_info.css" rel="stylesheet" type="text/css">
+    <script src="js\common.js"></script>
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
@@ -42,7 +42,7 @@
 
     <!-- Localforage : Caching downloaded data-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.4.0/localforage.min.js"></script>
-    <script src="..\js\cachedFetch.js"></script>
+    <script src="js\cachedFetch.js"></script>
 
 </head>
 
@@ -67,7 +67,7 @@
 
     <!-- load agent data and translated to new object format-->
     <script>
-        var cached_data = cachedFetch("http://10.247.120.201:8000/data/w10-hp-r1-1_recently.json");
+        var cached_data = cachedFetch("https://ypwalter.github.io/hasal-gh-pages/data/w10-hp-r1-1_recently.json");
         var additional_data = [];
 
         // wait till fulfilled and started to handle data

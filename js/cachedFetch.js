@@ -7,7 +7,6 @@ function cachedFetch(url, expireTime = 3600000) {
   return localforage.getItem(url).then(function(value){
     // create new cache if expired or empty (time is in ms)
     if (value == null || Date.now() - value.updated > expireTime){
-      console.log(filename + ": Redo fetching of data");
       return fetch(url)
         .then(function(result){
           return result.json();

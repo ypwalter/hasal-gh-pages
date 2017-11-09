@@ -50,26 +50,56 @@
 
     <div id="title"></div>
 
+    <div class="alert alert-success" style="font-size:18px; width: 80%; margin:0px auto;">
+        <ul>
+            <li>Machine IP:</li>
+            <li>Free Space:</li>
+        </ul>
+    </div>
+    <br/>
+
+    <div id="notification" class="alert alert-warning alert-dismissable" style="font-size:18px; width: 80%; margin:0px auto;">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        This is a public information.
+    </div>
+    <br/>
+
     <!-- Get Agent Name as Title -->
     <script>
         document.getElementById("title").innerText = agent_name;
         document.title = "Ejenti Dashboard : " + agent_name;
     </script>
 
-    <!-- Main Table -->
-    <table id="dataTables" class="table table-bordered table-hover" cellspacing="0" width="100%">
-        <thead>
-            <tr>
-                <th></th>
-                <th>Type</th>
-                <th>Command</th>
-                <th>Start Time</th>
-                <th>Latest Updated Time</th>
-                <th>Status</th>
-                <th>Description</th>
-            </tr>
-        </thead>
-    </table>
+    <div class="panel panel-info" style="width: 80%; margin:0px auto;">
+        <div class="panel-body">
+            <!-- Main Table -->
+            <table id="dataTables" class="table table-bordered" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Agent</th>
+                        <th>Type</th>
+                        <th>Command</th>
+                        <th>Start Time</th>
+                        <th>Latest Updated</th>
+                        <th>Task Status</th>
+                        <th>Task Description</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+    <br />
+
+    <div class="col-lg-3" style="float: right; margin-right:9.2%;">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <i class="fa fa-refresh fa-fw"></i> Page Refreshed Time: <script>document.write(new Date());</script><br />
+                <i class="fa fa-clock-o fa-fw"></i> Data Acquired Time: <br />
+            </div>
+            <!-- /.panel-heading -->
+        </div>
+    </div>
 
     <!-- load agent data and translated to new object format-->
     <script>
@@ -102,7 +132,7 @@
                         }
                     }
 
-                    return [["", dt.type, dt.cmd, start_datime, last_datime, latest_status.code, latest_status.status_code_desc, status]];
+                    return [["", "Agent_Name", dt.type, dt.cmd, start_datime, last_datime, latest_status.code, latest_status.status_code_desc, status]];
                 });
 
                 // Entry point of agent data
@@ -113,25 +143,25 @@
                              "className":      "details-control",
                              "orderable":      false,
                              "data":           null,
-                             "defaultContent": ''
+                             "defaultContent": '<i class="fa fa-hand-o-right fa-fw fa-1x" style="text-align:center;"></i>'
                          },
+                         { "sTitle": "Agent" },
                          { "sTitle": "Type" },
                          { "sTitle": "Command" },
                          { "sTitle": "Start Time" },
-                         { "sTitle": "Latest Update Time" },
-                         { "sTitle": "Status Code"},
-                         { "sTitle": "Status Description"}
+                         { "sTitle": "Latest Updated" },
+                         { "sTitle": "Task Status"},
+                         { "sTitle": "Task Description"}
                     ]
                 });
 
                 // Set Table Color
                 var output_length = output.length;
                 for(var i = 0; i < output_length; i++) {
+                    table.order( [ 4, 'asc' ] ).draw();
                     if(output[i][output[i].length - 1] == "error") {
-                        console.log(output.length);
-                        $( "#dataTables tr:nth-child(" + (i+1) + ")" ).css( "background-color", "#f06666" );
+                        $( "#dataTables tr:nth-child(" + (i+1) + ")" ).css( "background-color", "#f19a88" );
                     } else if(output[i][output[i].length - 1] == "warning") {
-                        console.log(output.length);
                         $( "#dataTables tr:nth-child(" + (i+1) + ")" ).css( "background-color", "#f2f20b" );
                     }
                 }
@@ -139,17 +169,18 @@
                 // Subarea: Detailed data
                 function format ( input_data ) {
                     // check if (Type, Command, Start Time) pair is correct
-                    var filtered_data = input.data.filter((obj) => (obj.type == input_data[1]) && (obj.cmd == input_data[2]) && ((new Date(parseInt(obj.start_ts*1000)).toLocaleString("en-US")) == input_data[3]));
+                    var filtered_data = input.data.filter((obj) => (obj.type == input_data[2]) && (obj.cmd == input_data[3]) 
+                                                                    && ((new Date(parseInt(obj.start_ts*1000)).toLocaleString("en-US")) == input_data[4]));
                     var title = "<div style='font-weight: bold;'>Details Data:</div>";
                     var content = "";
                     var status = filtered_data[0]['status'];
 
-                    for(var i = 0; i < status.length; i++) {
+                    for(var i = status.length - 1; i >= 0; i--) {
                         // Using toString() will return local time
                         dtime = new Date(parseInt(status[i].utc_timestamp*1000)).toLocaleString("en-US");
-                        content += "<div>received " + status[i].code + " (" + status[i].status_code_desc + ") in " + dtime + "<\div>";
+                        content += "<li>" + status[i].code + " (" + status[i].status_code_desc + ") in " + dtime;
                     }
-                    return '<div class="shown_table">' + title + content + '</div>';
+                    return '<div class="shown_table" style="background-color: lightgrey;">' + title + '<ul>' + content + '</ul>' + '</div>';
                 };
 
                 // Add event listener for opening and closing details
@@ -167,7 +198,7 @@
                         $(".shown_table").parent().hide();
                         $(".shown").removeClass('shown');
                         // Open detailed data for selected column
-                        console.log(page + ": show selected column")
+                        console.log(page + ": show selected column");
                         row.child( format(row.data()) ).show();
                         tr.addClass('shown');
                     }

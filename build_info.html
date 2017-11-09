@@ -44,65 +44,44 @@
 
     <div id="title">Build Information</div>
 
-    <!-- /.col-lg-12 -->
-    <div style="margin: 0 auto;width: 80%;">
-        <div class="col-lg-12">
-            <div class="panel panel-default">
-                <div class="panel-heading" style="text-align:center;">
-                    <h4><script>document.write(build_id);</script></h4>
-                </div>
-                <!-- /.panel-heading -->
-                <div class="panel-body">
-                    <!-- Nav tabs -->
-                    <ul class="nav nav-pills">
-                        <li class="active"><a href="#home-pills" data-toggle="tab">Basic Information</a>
-                        </li>
-                        <li><a href="#profile-pills" data-toggle="tab">Current Runs</a>
-                        </li>
-                        <li><a href="#messages-pills" data-toggle="tab">Tab 3</a>
-                        </li>
-                        <li><a href="#settings-pills" data-toggle="tab">Tab 4</a>
-                        </li>
-                    </ul>
+    <div class="alert alert-success" style="font-size:18px; width: 80%; margin:0px auto;">
+        <ul>
+            <li>Build Hash: <script>document.write(build_id);</script></li>
+            <li>Build Date: </li>
+            <li>Build Commit: </li>
+        </ul>
+    </div>
+    <br/>
 
-                    <!-- Tab panes -->
-                    <div class="tab-content">
-                        <div class="tab-pane fade in active" id="home-pills">
-                            <h4>Agent Information, Pulse Trigger Information, Build Information</h4>
-                            <p></p>
-                        </div>
-                        <div class="tab-pane fade" id="profile-pills">
-                            <br/>
-                            <!-- Main Table -->
-                            <table id="dataTables" class="table table-bordered table-hover" cellspacing="0" width="100%">
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>Task UID</th>
-                                        <th>Test Cases</th>
-                                        <th>Status</th>
-                                        <th>Description</th>
-                                    </tr>
-                                </thead>
-                            </table>
-                        </div>
-                        <div class="tab-pane fade" id="messages-pills">
-                            <h4>Tab 3</h4>
-                            <p></p>
-                        </div>
-                        <div class="tab-pane fade" id="settings-pills">
-                            <h4>Tab 4</h4>
-                            <p></p>
-                        </div>
-                    </div>
-                </div>
-                <!-- /.panel-body -->
-            </div>
-            <!-- /.panel -->
+    <div class="panel panel-info" style="width: 80%; margin:0px auto;">
+        <div class="panel-body">
+            <!-- Main Table -->
+            <table id="dataTables" class="table table-bordered table-hover" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Agent</th>
+                        <th>Task UID</th>
+                        <th>Test Cases</th>
+                        <th>Status</th>
+                        <th>Description</th>
+                        <th>Latest Update</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
     </div>
-    <!-- /.col-lg-12 -->
+    <br />
 
+    <div class="col-lg-3" style="float: right; margin-right:9.2%;">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <i class="fa fa-refresh fa-fw"></i> Page Refreshed Time: <script>document.write(new Date());</script><br />
+                <i class="fa fa-clock-o fa-fw"></i> Data Acquired Time: <br />
+            </div>
+            <!-- /.panel-heading -->
+        </div>
+    </div>
 
     <script>
         var pulse_trigger = cachedFetch("https://ypwalter.github.io/hasal-gh-pages/data/Askeings-MacBook-Pro.local_recently.json", 0);
@@ -161,7 +140,7 @@
                         var uid_list = latest_status.task_uid_list;
                         for (var i = 0; i < uid_list.length; i++) {
                             //TODO: I might no longer need to table data here
-                            table_data = ["", uid_list[i], final_case, latest_status.code, latest_status.status_code_desc];
+                            table_data = ["", "Agent", uid_list[i], final_case, latest_status.code, latest_status.status_code_desc, "Time"];
                             return_array.push(table_data);
                         }
                     }
@@ -198,7 +177,7 @@
                     var agent_name = "";
 
                     function _push_data() {
-                        table_data = [agent_name, agent_dt.type, agent_dt.cmd, agent_dt.start_ts,
+                        table_data = [agent_dt.type, agent_dt.cmd, agent_dt.start_ts,
                                       current_case, current_ts, (new Date(current_ts*1000).toLocaleString()),
                                       current_status_desc, current_status, task_uid, agent_dt.status];
                         if (! (task_uid in uid_to_status_info)) {
@@ -264,12 +243,14 @@
                                  "className":      "details-control",
                                  "orderable":      false,
                                  "data":           null,
-                                 "defaultContent": ''
+                                 "defaultContent": '<i class="fa fa-hand-o-right fa-fw fa-1x" style="text-align:center;"></i>'
                              },
+                             { "sTitle": "Agent" },
                              { "sTitle": "Task UID" },
                              { "sTitle": "Test Cases" },
-                             { "sTitle": "Status"},
-                             { "sTitle": "Status Description"}
+                             { "sTitle": "Task Status"},
+                             { "sTitle": "Task Description"},
+                             { "sTitle": "Latest Update"}
                         ],
                         "autoWidth": false
                     });
@@ -304,25 +285,24 @@
 
                     // Subarea: Detailed datatable
                     function format (input_column) {
-                        var task_uid = input_column[1];;
+                        var task_uid = input_column[2];;
                         detailed_table = '<table id="detailedTable" class="table table-bordered table-hover" cellspacing="0" width="100%"><thead><tr>' +
                                          '<th></th> <th></th> <th></th> <th></th> <th></th>' +
-                                         '<th></th> <th></th> <th></th> <th></th> <th></th>' +
+                                         '<th></th> <th></th> <th></th> <th></th>' +
                                          '</tr></thead></table>';
 
                         // return created information area
-                        return detailed_table;
+                        return '<div><br/>' + detailed_table + '</div>';
                     };
 
                     // Subarea: fill detailed data
                     var table2;
                     function fill_data (input_column) {
-                        var task_uid = input_column[1];
+                        var task_uid = input_column[2];
 
                         table2 = $('#detailedTable').DataTable({
                             "aaData": uid_to_status_info[task_uid],
                             "aoColumns": [
-                                 { "sTitle": "Agent" },
                                  { "sTitle": "Type" },
                                  { "sTitle": "Command" },
                                  { "sTitle": "Start Timestamp", "bVisible": false },
@@ -334,7 +314,10 @@
                                  { "sTitle": "Uid", "bVisible": false}
                             ],
                             "order": [[ 5, "asc" ]],
-                            "autoWidth": false
+                            "autoWidth": false,
+                            "bFilter": false,
+                            "paging": false,
+                            "info": false
                         });
 
                         return true;

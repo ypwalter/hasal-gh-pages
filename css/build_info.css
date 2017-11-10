@@ -12,6 +12,9 @@
 .dataTables_wrapper {
     margin: 0 auto;
 }
+.dataTables_filter {
+    text-align: right;
+}
 
 th { font-size: 18px; }
 td { font-size: 16px; }

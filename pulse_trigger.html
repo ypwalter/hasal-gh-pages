@@ -50,22 +50,37 @@
 
     <div id="title">Pulse Trigger Information</div>
 
-    <!-- Main Table -->
-    <div style="width:85%; margin:0px auto;">
-        <table id="dataTables" class="table table-bordered table-hover" cellspacing="0" width="100%">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>Type</th>
-                    <th>Command</th>
-                    <th>Start Time</th>
-                    <th>Latest Updated Time</th>
-                    <th>Status</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-        </table>
+    <div class="panel panel-info" style="width: 80%; margin:0px auto;">
+        <div class="panel-body">
+            <!-- Main Table -->
+            <table id="dataTables" class="table table-bordered table-hover" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Type</th>
+                        <th>Command</th>
+                        <th>Start Time</th>
+                        <th>Latest Updated Time</th>
+                        <th>Status</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
     </div>
+    <br />
+
+    <!-- Refresh Time -->
+    <div class="col-lg-3" style="float: right; margin-right:9.2%;">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <i class="fa fa-refresh fa-fw"></i> Page Refreshed Time: <script>document.write(new Date());</script><br />
+                <i class="fa fa-clock-o fa-fw"></i> Data Acquired Time: <br />
+            </div>
+            <!-- /.panel-heading -->
+        </div>
+    </div>
+
 
     <!-- load agent data and translated to new object format-->
     <script>
@@ -99,6 +114,7 @@
                         }
                     }
 
+                    console.log(latest_status);
                     return [["", dt.type, latest_status.cmd, start_datime, last_datime, latest_status.code, latest_status.status_code_desc, status]];
                 });
 
@@ -110,7 +126,7 @@
                              "className":      "details-control",
                              "orderable":      false,
                              "data":           null,
-                             "defaultContent": ''
+                             "defaultContent": '<i class="fa fa-hand-o-right fa-fw fa-1x" style="text-align:center;"></i>'
                          },
                          { "sTitle": "Type" },
                          { "sTitle": "Command" },

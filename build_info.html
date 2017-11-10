@@ -20,8 +20,8 @@
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
     <!-- Local Common JS/CSS Library by Walter -->
-    <link href="..\css\build_info.css" rel="stylesheet" type="text/css">
-    <script src="..\js\common.js"></script>
+    <link href="css\build_info.css" rel="stylesheet" type="text/css">
+    <script src="js\common.js"></script>
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
@@ -36,7 +36,7 @@
 
     <!-- Localforage : Caching downloaded data-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.4.0/localforage.min.js"></script>
-    <script src="..\js\cachedFetch.js"></script>
+    <script src="js\cachedFetch.js"></script>
 
 </head>
 
@@ -44,70 +44,50 @@
 
     <div id="title">Build Information</div>
 
-    <!-- /.col-lg-12 -->
-    <div style="margin: 0 auto;width: 80%;">
-        <div class="col-lg-12">
-            <div class="panel panel-default">
-                <div class="panel-heading" style="text-align:center;">
-                    <h4><script>document.write(build_id);</script></h4>
-                </div>
-                <!-- /.panel-heading -->
-                <div class="panel-body">
-                    <!-- Nav tabs -->
-                    <ul class="nav nav-pills">
-                        <li class="active"><a href="#home-pills" data-toggle="tab">Basic Information</a>
-                        </li>
-                        <li><a href="#profile-pills" data-toggle="tab">Current Runs</a>
-                        </li>
-                        <li><a href="#messages-pills" data-toggle="tab">Tab 3</a>
-                        </li>
-                        <li><a href="#settings-pills" data-toggle="tab">Tab 4</a>
-                        </li>
-                    </ul>
+    <div class="alert alert-success" style="font-size:18px; width: 80%; margin:0px auto;">
+        <ul>
+            <li>Build Hash: <script>document.write(build_id);</script></li>
+            <li>Build Date: </li>
+            <li>Build Commit: </li>
+        </ul>
+    </div>
+    <br/>
 
-                    <!-- Tab panes -->
-                    <div class="tab-content">
-                        <div class="tab-pane fade in active" id="home-pills">
-                            <h4>Agent Information, Pulse Trigger Information, Build Information</h4>
-                            <p></p>
-                        </div>
-                        <div class="tab-pane fade" id="profile-pills">
-                            <br/>
-                            <!-- Main Table -->
-                            <table id="dataTables" class="table table-bordered table-hover" cellspacing="0" width="100%">
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>Task UID</th>
-                                        <th>Test Cases</th>
-                                        <th>Status</th>
-                                        <th>Description</th>
-                                    </tr>
-                                </thead>
-                            </table>
-                        </div>
-                        <div class="tab-pane fade" id="messages-pills">
-                            <h4>Tab 3</h4>
-                            <p></p>
-                        </div>
-                        <div class="tab-pane fade" id="settings-pills">
-                            <h4>Tab 4</h4>
-                            <p></p>
-                        </div>
-                    </div>
-                </div>
-                <!-- /.panel-body -->
-            </div>
-            <!-- /.panel -->
+    <div class="panel panel-info" style="width: 80%; margin:0px auto;">
+        <div class="panel-body">
+            <!-- Main Table -->
+            <table id="dataTables" class="table table-bordered table-hover" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Agent</th>
+                        <th>Task UID</th>
+                        <th>Test Cases</th>
+                        <th>Status</th>
+                        <th>Description</th>
+                        <th>Latest Update</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
     </div>
-    <!-- /.col-lg-12 -->
+    <br />
 
+    <!-- Refresh Time -->
+    <div class="col-lg-3" style="float: right; margin-right:9.2%;">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <i class="fa fa-refresh fa-fw"></i> Page Refreshed Time: <script>document.write(new Date());</script><br />
+                <i class="fa fa-clock-o fa-fw"></i> Data Acquired Time: <br />
+            </div>
+            <!-- /.panel-heading -->
+        </div>
+    </div>
 
     <script>
-        var pulse_trigger = cachedFetch("http://10.247.120.201:8000/data/Askeings-MacBook-Pro.local_recently.json", 0);
+        var pulse_trigger = cachedFetch("https://ypwalter.github.io/hasal-gh-pages/data/Askeings-MacBook-Pro.local_recently.json", 0);
         //friendly url - https://f001.backblazeb2.com/file/HasalAgentStatus/user-PC_recently.json
-        var agent_data = cachedFetch("http://10.247.120.201:8000/data/user-PC_recently_new.json", 0);
+        var agent_data = cachedFetch("https://ypwalter.github.io/hasal-gh-pages/data/user-PC_recently_new.json", 0);
         var build_list = [];
         var tuid = {};
         var uid_to_status_info = {};
@@ -161,7 +141,7 @@
                         var uid_list = latest_status.task_uid_list;
                         for (var i = 0; i < uid_list.length; i++) {
                             //TODO: I might no longer need to table data here
-                            table_data = ["", uid_list[i], final_case, latest_status.code, latest_status.status_code_desc];
+                            table_data = ["", "Agent", uid_list[i], final_case, latest_status.code, latest_status.status_code_desc, "Time"];
                             return_array.push(table_data);
                         }
                     }
@@ -197,8 +177,10 @@
                     // TODO: need to handle from file name later
                     var agent_name = "";
 
+                    // TODO: need to put a note on format later
                     function _push_data() {
-                        table_data = [agent_name, agent_dt.type, agent_dt.cmd, agent_dt.start_ts,
+                        // This the format of data inside the table
+                        table_data = [agent_dt.type, agent_dt.cmd, agent_dt.start_ts,
                                       current_case, current_ts, (new Date(current_ts*1000).toLocaleString()),
                                       current_status_desc, current_status, task_uid, agent_dt.status];
                         if (! (task_uid in uid_to_status_info)) {
@@ -216,9 +198,6 @@
                         current_ts = -1;
                     }
 
-                    // output final status
-                    // (old)table_data = [agent_name, task_uid, agent_dt.type, agent_dt.cmd, agent_dt.start_ts, current_case,
-                    //                    agent_dt.status,  current_ts, current_status_desc, current_status];
                     // check if multiple status exists
                     var current_case = "";
                     var current_status = -1;
@@ -264,14 +243,15 @@
                                  "className":      "details-control",
                                  "orderable":      false,
                                  "data":           null,
-                                 "defaultContent": ''
+                                 "defaultContent": '<i class="fa fa-hand-o-right fa-fw fa-1x" style="text-align:center;"></i>'
                              },
+                             { "sTitle": "Agent" },
                              { "sTitle": "Task UID" },
                              { "sTitle": "Test Cases" },
-                             { "sTitle": "Status"},
-                             { "sTitle": "Status Description"}
-                        ],
-                        "autoWidth": false
+                             { "sTitle": "Task Status"},
+                             { "sTitle": "Task Description"},
+                             { "sTitle": "Latest Update"}
+                        ]
                     });
 
                     // Add event listener for opening and closing details
@@ -290,39 +270,42 @@
                             fill_data(row.data());
                         }
                         $('#detailedTable tbody').on('click', '.more', function () {
-                            detailed_status = table2.row($(this).parent()).data()[10];
+                            console.log(page + ": getting detailed status from data in the row");
+                            detailed_status = table2.row($(this).parent()).data()[9];
 
+                            // open a popup window
+                            console.log(page + ": open a popup window for status to be output");
                             var win = window.open("statusInfo", "statusInfo", "width=600, height=400, toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no, titlebar=no" );
                             var doc = win.document;
                             doc.open("application/json");
-                            doc.write(JSON.stringify(detailed_status, null, 4));
+
+                            // sort by time first and then sort by status code
+                            console.log(page + ": sort the status before output it");
+                            ordered_status = detailed_status.slice(0);
+                            ordered_status.sort(function(a, b) { 
+                                // if time is the same, sort by status code
+                                if (b.utc_timestamp == a.utc_timestamp) {
+                                    return b.code - a.code;
+                                } else {
+                                    return b.utc_timestamp - a.utc_timestamp;
+                                }
+                            });
+
+                            // out put the status in JSON format with indent 4
+                            doc.write(JSON.stringify(ordered_status, null, 4));
                             doc.close();
                             win.focus();
                         });
                     });
 
-
-                    // Subarea: Detailed datatable
-                    function format (input_column) {
-                        var task_uid = input_column[1];;
-                        detailed_table = '<table id="detailedTable" class="table table-bordered table-hover" cellspacing="0" width="100%"><thead><tr>' +
-                                         '<th></th> <th></th> <th></th> <th></th> <th></th>' +
-                                         '<th></th> <th></th> <th></th> <th></th> <th></th>' +
-                                         '</tr></thead></table>';
-
-                        // return created information area
-                        return detailed_table;
-                    };
-
                     // Subarea: fill detailed data
                     var table2;
                     function fill_data (input_column) {
-                        var task_uid = input_column[1];
+                        var task_uid = input_column[2];
 
                         table2 = $('#detailedTable').DataTable({
                             "aaData": uid_to_status_info[task_uid],
                             "aoColumns": [
-                                 { "sTitle": "Agent" },
                                  { "sTitle": "Type" },
                                  { "sTitle": "Command" },
                                  { "sTitle": "Start Timestamp", "bVisible": false },
@@ -334,11 +317,27 @@
                                  { "sTitle": "Uid", "bVisible": false}
                             ],
                             "order": [[ 5, "asc" ]],
-                            "autoWidth": false
+                            "autoWidth": false,
+                            "bFilter": false,
+                            "paging": false,
+                            "info": false
                         });
 
                         return true;
                     };
+
+                    // Subarea: Detailed datatable
+                    function format (input_column) {
+                        var task_uid = input_column[2];;
+                        detailed_table = '<table id="detailedTable" class="table table-bordered table-hover" cellspacing="0" width="100%"><thead><tr>' +
+                                         '<th></th> <th></th> <th></th> <th></th> <th></th>' +
+                                         '<th></th> <th></th> <th></th> <th></th>' +
+                                         '</tr></thead></table>';
+
+                        // return created information area
+                        return '<div><br/>' + detailed_table + '</div>';
+                    };
+
                 });
 
             });

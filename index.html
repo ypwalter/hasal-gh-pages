@@ -25,28 +25,6 @@
     <!-- Custom Fonts -->
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
-    <!-- More Information -->
-    <Style>
-        td.details-control {
-            background: url('../resources/details_open.png') no-repeat center center;
-            cursor: pointer;
-        }
-        tr.shown td.details-control {
-            background: url('../resources/details_close.png') no-repeat center center;
-        }
-    </Style>
-
-    <!-- Morris Charts CSS (Not working in Firefox)
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css">
-    -->
-
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-
 </head>
 
 <body>
@@ -55,117 +33,104 @@
             <div class="row">
                 <div class="col-lg-12">
                     <h1 class="page-header" style="text-align:center;">Ejenti Dashboard - Main</h1>
+                    <!-- load files and see if something is inside. -->
+                    <div id="notification" class="alert alert-warning alert-dismissable" style="font-size:20px;">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                        This is a public information.
+                    </div>
                 </div>
                 <!-- /.col-lg-12 -->
             </div>
             <!-- /.row -->
-            <div class="row">
-                <div class="col-lg-3 col-md-6">
-                    <div class="panel panel-primary">
-                        <div class="panel-heading">
-                            <div class="row">
-                                <div class="col-xs-3">
-                                    <!--<i class="fa fa-comments fa-5x"></i>-->
-                                </div>
-                                <div class="col-xs-9 text-right">
-                                    <div class="huge">16</div>
-                                    <div>Current Agents</div>
+            <center>
+                <div class="row">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="panel panel-green">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-user-secret fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge">10 / 16</div>
+                                        <div>Current Agents</div>
+                                    </div>
                                 </div>
                             </div>
+                            <a href="#">
+                                <div class="panel-footer">
+                                    <span class="pull-left">Active agents in past 24 hours / All known agents</span>
+                                    <span class="pull-right"><!--<i class="fa fa-arrow-circle-right"></i>--></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
                         </div>
-                        <a href="#">
-                            <div class="panel-footer">
-                                <span class="pull-left">Windows 10 - 6 | Windows 7 - 10</span>
-                                <span class="pull-right"><!--<i class="fa fa-arrow-circle-right"></i>--></span>
-                                <div class="clearfix"></div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="panel panel-yellow">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-warning fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge">4</div>
+                                        <div>Warning</div>
+                                    </div>
+                                </div>
                             </div>
-                        </a>
+                            <a href="#">
+                                <div class="panel-footer">
+                                    <span class="pull-left">Warnings occurred in past 24 hours</span>
+                                    <span class="pull-right"><!--<i class="fa fa-arrow-circle-right"></i>--></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="panel panel-red">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-times fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge">2</div>
+                                        <div>Error</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="#">
+                                <div class="panel-footer">
+                                    <span class="pull-left">Errors occurred in past 24 hours</span>
+                                    <span class="pull-right"><!--<i class="fa fa-arrow-circle-right"></i>--></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="panel panel-green">
-                        <div class="panel-heading">
-                            <div class="row">
-                                <div class="col-xs-3">
-                                    <!--<i class="fa fa-tasks fa-5x"></i>-->
-                                </div>
-                                <div class="col-xs-9 text-right">
-                                    <div class="huge">10</div>
-                                    <div>Current Testing</div>
-                                </div>
-                            </div>
-                        </div>
-                        <a href="#">
-                            <div class="panel-footer">
-                                <span class="pull-left">Windows 10 - 5 | Windows 7 - 5</span>
-                                <span class="pull-right"><!--<i class="fa fa-arrow-circle-right">--></i></span>
-                                <div class="clearfix"></div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="panel panel-yellow">
-                        <div class="panel-heading">
-                            <div class="row">
-                                <div class="col-xs-3">
-                                    <!--<i class="fa fa-shopping-cart fa-5x"></i>-->
-                                </div>
-                                <div class="col-xs-9 text-right">
-                                    <div class="huge">4</div>
-                                    <div>Warning</div>
-                                </div>
-                            </div>
-                        </div>
-                        <a href="#">
-                            <div class="panel-footer">
-                                <span class="pull-left">View Details</span>
-                                <span class="pull-right"><!--<i class="fa fa-arrow-circle-right"></i>--></span>
-                                <div class="clearfix"></div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="panel panel-red">
-                        <div class="panel-heading">
-                            <div class="row">
-                                <div class="col-xs-3">
-                                    <!--<i class="fa fa-support fa-5x"></i>-->
-                                </div>
-                                <div class="col-xs-9 text-right">
-                                    <div class="huge">2</div>
-                                    <div>Error</div>
-                                </div>
-                            </div>
-                        </div>
-                        <a href="#">
-                            <div class="panel-footer">
-                                <span class="pull-left">View Details</span>
-                                <span class="pull-right"><!--<i class="fa fa-arrow-circle-right"></i>--></span>
-                                <div class="clearfix"></div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-            </div>
+            </center>
             <!-- /.row -->
             <div class="row">
                 <div class="col-lg-8">
                     <!-- panel -->
                     <div class="panel panel-info">
                         <div class="panel-heading">
-                            <i class="fa fa-list-ul fa-fw"></i> Data Table
+                            <i class="fa fa-list-ul fa-fw"></i> Agents List
                         </div>
                         <!-- /.panel-heading -->
                         <div class="panel-body">
                             <table width="100%" class="table table-bordered table-hover" id="dataTables">
                                 <thead>
                                     <tr>
-                                        <th>More Info</th>
-                                        <th>Status</th>
+                                        <th></th>
                                         <th>Agent</th>
-                                        <th>Current Task</th>
+                                        <th>Status</th>
+                                        <th>Disk Usage</th>
+                                        <th>Latest Task</th>
+                                        <th>Latest Active</th>
                                         <th>Error / Warning</th>
                                     </tr>
                                 </thead>
@@ -191,41 +156,47 @@
                     <!-- /.panel -->
                     <div class="panel panel-info">
                         <div class="panel-heading">
-                            <i class="fa fa-user-secret fa-fw"></i> Build List
+                            <i class="fa fa-bar-chart-o fa-fw"></i> Build List
                         </div>
                         <!-- /.panel-heading -->
                         <div class="panel-body">
                             <div class="list-group">
                                 <a href="#" class="list-group-item">
-                                    <i class="fa fa-user-circle fa-fw"></i> Build ID
-                                    <span class="pull-right text-muted small"><em>4 minutes ago</em>
+                                    <i class="fa fa-folder-open fa-fw"></i> Build Hash
+                                    <span class="pull-right text-muted small"><em>(Build Time ID)</em>
                                     </span>
                                 </a>
+
                                 <a href="#" class="list-group-item">
-                                    <i class="fa fa-user-circle fa-fw"></i> Build ID
-                                    <span class="pull-right text-muted small"><em>12 minutes ago</em>
+                                    <i class="fa fa-folder-open fa-fw"></i> Build Hash
+                                    <span class="pull-right text-muted small"><em>(Build Time ID)</em>
                                     </span>
                                 </a>
+
                                 <a href="#" class="list-group-item">
-                                    <i class="fa fa-user-circle fa-fw"></i> Build ID
-                                    <span class="pull-right text-muted small"><em>27 minutes ago</em>
+                                    <i class="fa fa-folder-open fa-fw"></i> Build Hash
+                                    <span class="pull-right text-muted small"><em>(Build Time ID)</em>
                                     </span>
                                 </a>
+
                                 <a href="#" class="list-group-item">
-                                    <i class="fa fa-user-circle fa-fw"></i> Build ID
-                                    <span class="pull-right text-muted small"><em>43 minutes ago</em>
+                                    <i class="fa fa-folder-open fa-fw"></i> Build Hash
+                                    <span class="pull-right text-muted small"><em>(Build Time ID)</em>
                                     </span>
                                 </a>
+
                                 <a href="#" class="list-group-item">
-                                    <i class="fa fa-user-circle fa-fw"></i> Build ID
-                                    <span class="pull-right text-muted small"><em>11:32 AM</em>
+                                    <i class="fa fa-folder-open fa-fw"></i> Build Hash
+                                    <span class="pull-right text-muted small"><em>(Build Time ID)</em>
                                     </span>
                                 </a>
+
                                 <a href="#" class="list-group-item">
-                                    <i class="fa fa-user-circle fa-fw"></i> Build ID
-                                    <span class="pull-right text-muted small"><em>11:13 AM</em>
+                                    <i class="fa fa-folder-open fa-fw"></i> Build Hash
+                                    <span class="pull-right text-muted small"><em>(Build Time ID)</em>
                                     </span>
                                 </a>
+
                             </div>
                             <!-- /.list-group -->
                             <!-- <a href="#" class="btn btn-default btn-block">View All Alerts</a> -->
@@ -234,58 +205,24 @@
                     </div>
                     <div class="panel panel-info">
                         <div class="panel-heading">
-                            <i class="fa fa-bell fa-fw"></i> DevOp Guidelines
+                            <i class="fa fa-bell fa-fw"></i> Additional Information
                         </div>
                         <div class="panel-body">
-                            Go to DevOp Guidelines <a href="dev_op.html" target="_blank">Page</a> <br/>
-                            Go to DevOp Logs <a href="https://github.com/Mozilla-TWQA/Hasal/wiki/DevOp-Page" target="_blank">Page</a>
+                            <ul>
+                                <li><a href="pulse_trigger.html" target="_blank">Pulse Trigger Information</a></li>
+                                <li><a href="https://github.com/Mozilla-TWQA/Hasal" target="_blank">Hasal Project in Github</a></li>
+                                <li><a href="dev_op.html" target="_blank">DevOp Guidelines</a></li>
+                                <li><a href="https://github.com/Mozilla-TWQA/Hasal/wiki/DevOp-Page" target="_blank">DevOp Logs</a></li>
+                            </ul>
                         </div>
                         <!-- /.panel-heading -->
                     </div>
-                    <div class="panel panel-info">
+                    <div class="panel panel-primary">
                         <div class="panel-heading">
-                            <i class="fa fa-bell fa-fw"></i> Notifications Panel
+                            <i class="fa fa-refresh fa-fw"></i> Page Refreshed Time: <script>document.write(new Date());</script><br />
+                            <i class="fa fa-clock-o fa-fw"></i> Data Acquired Time: <br />
                         </div>
                         <!-- /.panel-heading -->
-                        <div class="panel-body">
-                            <div class="list-group">
-                                <!--
-                                <a href="#" class="list-group-item">
-                                    <i class="fa fa-times fa-fw"></i> Error: w10-hp-r1-10
-                                    <span class="pull-right text-muted small"><em>4 minutes ago</em>
-                                    </span>
-                                </a>
-                                <a href="#" class="list-group-item">
-                                    <i class="fa fa-bolt fa-fw"></i> Warning: w10-hp-r1-6
-                                    <span class="pull-right text-muted small"><em>12 minutes ago</em>
-                                    </span>
-                                </a>
-                                <a href="#" class="list-group-item">
-                                    <i class="fa fa-bolt fa-fw"></i> Warning: w7-asus-r-1
-                                    <span class="pull-right text-muted small"><em>27 minutes ago</em>
-                                    </span>
-                                </a>
-                                <a href="#" class="list-group-item">
-                                    <i class="fa fa-bolt fa-fw"></i> Warning: w7-asus-r-3
-                                    <span class="pull-right text-muted small"><em>43 minutes ago</em>
-                                    </span>
-                                </a>
-                                <a href="#" class="list-group-item">
-                                    <i class="fa fa-bolt fa-fw"></i> Warning: w7-asus-r-5
-                                    <span class="pull-right text-muted small"><em>11:32 AM</em>
-                                    </span>
-                                </a>
-                                <a href="#" class="list-group-item">
-                                    <i class="fa fa-times fa-fw"></i> Error: w10-hp-r1-8
-                                    <span class="pull-right text-muted small"><em>11:13 AM</em>
-                                    </span>
-                                </a>
-                                -->
-                            </div>
-                            <!-- /.list-group -->
-                            <!-- <a href="#" class="btn btn-default btn-block">View All Alerts</a> -->
-                        </div>
-                        <!-- /.panel-body -->
                     </div>
                 </div>
                 <!-- /.col-lg-4 -->
@@ -324,7 +261,7 @@
     <script>
     // Detailed data
     function format ( input_data ) {
-        return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;" class="shown_table">'+
+        return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px; style="background-color: lightgrey;" class="shown_table">'+
                  '<tr>'+
                    '<td style="font-weight: bold;">Details Data of ' + 
                      '<a href="host_newobj.html?agent=' + input_data['Agent'] + '" target="_blank">' +
@@ -344,11 +281,13 @@
                   "className":      "details-control",
                   "orderable":      false,
                   "data":           null,
-                  "defaultContent": ''
+                  "defaultContent": '<i class="fa fa-hand-o-right fa-fw fa-2x" style="text-align:center;"></i>'
               },
-              { "data": "Status" },
               { "data": "Agent" },
-              { "data": "Current Task" },
+              { "data": "Status" },
+              { "data": "Disk Usage" },
+              { "data": "Latest Task" },
+              { "data": "Latest Active" },
               { "data": "Error / Warning" }
           ],
           "order": [[1, 'asc']]

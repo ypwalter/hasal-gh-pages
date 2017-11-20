@@ -118,8 +118,8 @@
                 var output = jQuery.map(input.data, function(dt, i) {
                     // var last_status_code = finder(Math.max, dt.status, function(x) { return parseInt(x.code); });
                     var latest_status = dt.status.getMax("code");
-                    var start_datime = new Date(parseInt(dt.start_ts*1000)).toLocaleString("en-US");
-                    var last_datime = new Date(parseInt(latest_status.utc_timestamp*1000)).toLocaleString("en-US");
+                    var start_datime = new Date(parseInt(dt.start_ts*1000)).toUTCString("en-US");
+                    var last_datime = new Date(parseInt(latest_status.utc_timestamp*1000)).toUTCString("en-US");
                     
                     // check status
                     var status = "normal";
@@ -145,7 +145,7 @@
                              "data":           null,
                              "defaultContent": '<i class="fa fa-hand-o-right fa-fw fa-1x" style="text-align:center;"></i>'
                          },
-                         { "sTitle": "Agent" },
+                         { "sTitle": "Agent", "bVisible": false },
                          { "sTitle": "Type" },
                          { "sTitle": "Command" },
                          { "sTitle": "Start Time" },
@@ -155,10 +155,10 @@
                     ]
                 });
 
-                // Set Table Color
+                // Set Table Color and Reorder
                 var output_length = output.length;
                 for(var i = 0; i < output_length; i++) {
-                    table.order( [ 4, 'asc' ] ).draw();
+                    table.order( [ 4, 'desc' ] ).draw();
                     if(output[i][output[i].length - 1] == "error") {
                         $( "#dataTables tr:nth-child(" + (i+1) + ")" ).css( "background-color", "#f19a88" );
                     } else if(output[i][output[i].length - 1] == "warning") {
@@ -170,14 +170,14 @@
                 function format ( input_data ) {
                     // check if (Type, Command, Start Time) pair is correct
                     var filtered_data = input.data.filter((obj) => (obj.type == input_data[2]) && (obj.cmd == input_data[3]) 
-                                                                    && ((new Date(parseInt(obj.start_ts*1000)).toLocaleString("en-US")) == input_data[4]));
+                                                                    && ((new Date(parseInt(obj.start_ts*1000)).toUTCString("en-US")) == input_data[4]));
                     var title = "<div style='font-weight: bold;'>Details Data:</div>";
                     var content = "";
                     var status = filtered_data[0]['status'];
 
                     for(var i = status.length - 1; i >= 0; i--) {
                         // Using toString() will return local time
-                        dtime = new Date(parseInt(status[i].utc_timestamp*1000)).toLocaleString("en-US");
+                        dtime = new Date(parseInt(status[i].utc_timestamp*1000)).toUTCString("en-US");
                         content += "<li>" + status[i].code + " (" + status[i].status_code_desc + ") in " + dtime;
                     }
                     return '<div class="shown_table" style="background-color: lightgrey;">' + title + '<ul>' + content + '</ul>' + '</div>';

@@ -25,6 +25,24 @@
     <!-- Custom Fonts -->
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
+    <!-- Custom Javascript by Walter -->
+    <script src="js\common.js"></script>
+
+    <!-- Localforage : Caching downloaded data-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.4.0/localforage.min.js"></script>
+    <script src="js\cachedFetch.js"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.js"></script>
+
+    <!-- DataTables JavaScript -->
+    <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.0/js/dataTables.responsive.min.js"></script>
+
 </head>
 
 <body>
@@ -52,7 +70,7 @@
                                         <i class="fa fa-user-secret fa-5x"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
-                                        <div class="huge">10 / 16</div>
+                                        <div id="agent_count" class="huge"></div>
                                         <div>Current Agents</div>
                                     </div>
                                 </div>
@@ -74,7 +92,7 @@
                                         <i class="fa fa-warning fa-5x"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
-                                        <div class="huge">4</div>
+                                        <div class="huge">0</div>
                                         <div>Warning</div>
                                     </div>
                                 </div>
@@ -96,7 +114,7 @@
                                         <i class="fa fa-times fa-5x"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
-                                        <div class="huge">2</div>
+                                        <div class="huge">0</div>
                                         <div>Error</div>
                                     </div>
                                 </div>
@@ -127,9 +145,9 @@
                                     <tr>
                                         <th></th>
                                         <th>Agent</th>
+                                        <th>Latest Task</th>
                                         <th>Status</th>
                                         <th>Disk Usage</th>
-                                        <th>Latest Task</th>
                                         <th>Latest Active</th>
                                         <th>Error / Warning</th>
                                     </tr>
@@ -231,90 +249,124 @@
         </div>
         <!-- /#page-wrapper -->
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+    
+    <script>
 
-    <!-- Bootstrap Core JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.js"></script>
-
-    <!-- Morris Charts JavaScript (Since Morris does not work with firefox, diable it)
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
-    -->    
-    <!-- Morris JavaScript And Data (Not working in firefox)
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.0/morris.minjs"></script>
-    <script src="data/morris-data.js"></script>
-    -->
-
-    <!-- Metis Menu Plugin JavaScript (We do not use this menu, but load it for not getting exception in sb-admin js)
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/metisMenu/1.1.3/metisMenu.min.js"></script>
-    -->
-    <!-- Custom Theme JavaScript
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin-2/3.3.7+1/js/sb-admin-2.min.js"></script>
-    -->
-
-    <!-- DataTables JavaScript -->
-    <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.2.0/js/dataTables.responsive.min.js"></script>
+    </script>
 
     <!-- Create Data Table : https://datatables.net/reference/option/ajax -->
     <script>
-    // Detailed data
+    // Table: Show Detailed data
     function format ( input_data ) {
         return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px; style="background-color: lightgrey;" class="shown_table">'+
                  '<tr>'+
                    '<td style="font-weight: bold;">Details Data of ' + 
-                     '<a href="host_newobj.html?agent=' + input_data['Agent'] + '" target="_blank">' +
-                       input_data['Agent'] +
+                     '<a href="host_newobj.html?agent=' + input_data[1] + '" target="_blank">' +
+                       input_data[1] +
                      '</a>:' +
                    '</td>'+
                  '</tr>'+
                '</table>';
     }
 
-    $(document).ready(function() {
-        // Entry point of agent data
-        var table = $('#dataTables').DataTable({
-          "ajax": "data/table-data.json",
-          "columns": [
-              {
-                  "className":      "details-control",
-                  "orderable":      false,
-                  "data":           null,
-                  "defaultContent": '<i class="fa fa-hand-o-right fa-fw fa-2x" style="text-align:center;"></i>'
-              },
-              { "data": "Agent" },
-              { "data": "Status" },
-              { "data": "Disk Usage" },
-              { "data": "Latest Task" },
-              { "data": "Latest Active" },
-              { "data": "Error / Warning" }
-          ],
-          "order": [[1, 'asc']]
-        });
+    // Load Cached Data : Agent List
+    var cached_data = cachedFetch("https://gist.githubusercontent.com/mozhasalstatus/cf4b97a3273e2f3117211a3663928133/raw/file_name_list.json?" + Date.now());
 
-        // Add event listener for opening and closing details
-        $('#dataTables tbody').on('click', 'td.details-control', function () {
-            var tr = $(this).closest('tr');
-            var row = table.row( tr );
+    cached_data.then(function(input){
+        // console.log(input);
+        // Create data for table to show
+        //                         [0     , 1    , 2          , 3     , 4         , 5            , 6            , 7      ]
+        // Current Output Format: [[(None), Agent, Latest Task, Status, Disk Usage, Latest Active, Error/Warning, Timeout]*n]
+        var agents_list = Object.keys(input);
+        var output = [];
 
-            // Hide all shown details
-            console.log("index.html: hide shown columns")
-            $(".shown_table").parent().hide();
-            $(".shown").removeClass('shown');
+        // Build up data arrar for the table
+        for(var i = 0; i < agents_list.length; i++) {
+            var agent_data = new Array(7);
 
-            if ( row.child.isShown() ) {
-                // This row is already open - close it
-                row.child.hide();
-                tr.removeClass('shown');
-            } else {
-                // Open this row
-                console.log("index.html: show selected column")
-                row.child( format(row.data()) ).show();
-                tr.addClass('shown');
+            // Get the agent name
+            var agent_name = agents_list[i];
+
+            // Get the latest active time for the agent
+            var updated_at = parseInt(input[agent_name]["recently"]["updated_at"]*1000);
+            var latest_active = new Date(parseInt(input[agent_name]["recently"]["updated_at"]*1000)).toUTCString("en-US");
+
+            // Finalized data set for this specific agent
+            agent_data[0] = null;
+            agent_data[1] = agent_name; 
+            agent_data[2] = null;
+            agent_data[3] = null;
+            agent_data[4] = null;
+            agent_data[5] = latest_active;
+            agent_data[6] = 0;
+            agent_data[7] = ((Date.now() - updated_at) > 86400000) ? -1 : 0;
+            output.push(agent_data);
+        }
+        // console.log(output);
+
+        // Set current agents count
+        var total_agent = output.length;
+        var active_agent = output.length;
+        for(var i = 0; i < output.length; i++) {
+            active_agent += output[i][7];
+        }
+        document.getElementById("agent_count").innerText = active_agent + " / " + total_agent;
+
+        $(document).ready(function() {
+            // Entry point of agent data
+            var table = $('#dataTables').DataTable({
+              "aaData": output,
+              "aoColumns": [
+                  {
+                      "className":      "details-control",
+                      "orderable":      false,
+                      "data":           null,
+                      "defaultContent": '<i class="fa fa-hand-o-right fa-fw fa-2x" style="text-align:center;"></i>'
+                  },
+                  { "sTitle": "Agent" },
+                  { "sTitle": "Latest Task" },
+                  { "sTitle": "Status" },
+                  { "sTitle": "Disk Usage" },
+                  { "sTitle": "Latest Active" },
+                  { "sTitle": "Error / Warning" }
+              ],
+              "iDisplayLength": 50
+            });
+
+            // Set Table Color and Reorder
+            var output_length = output.length;
+            for(var i = 0; i < output_length; i++) {
+                if(output[i][7] == (-1)) {
+                    $( "#dataTables tr:nth-child(" + (i+1) + ")" ).css( "background-color", "#f19a88" );
+                }
             }
-        } );
+            table.order( [ 5, 'desc' ] ).draw();
+
+            // Add event listener for opening and closing details
+            $('#dataTables tbody').on('click', 'td.details-control', function () {
+                var tr = $(this).closest('tr');
+                var row = table.row( tr );
+
+                // Hide all shown details
+                    console.log(page + ": hide shown columns")
+                $(".shown_table").parent().hide();
+                $(".shown").removeClass('shown');
+
+                if ( row.child.isShown() ) {
+                    // This row is already open - close it
+                    row.child.hide();
+                    tr.removeClass('shown');
+                } else {
+                    // Open this row
+                    console.log(page + ": show selected column")
+                    row.child( format(row.data()) ).show();
+                    tr.addClass('shown');
+                }
+            } );
+        });
     });
+
+
     </script>
 
 </body>

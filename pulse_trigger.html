@@ -88,20 +88,17 @@
         var additional_data = [];
 
         // wait till fulfilled and started to handle data
-        cached_data.then(function(data){
+        cached_data.then(function(input){
             console.log(page + ": got cached data for processing");
-            // input is the translated data now, it doesn't need to be translated
-            // var input = translate_obj(data);
-            var input = data;
-            console.log(page + ": finished translating the original object");
+            // console.log(page + ": finished translating the original object");
 
             $(document).ready(function() {
                 // Transfer to array for main table to be constructed
                 var output = jQuery.map(input.data, function(dt, i) {
                     // var last_status_code = finder(Math.max, dt.status, function(x) { return parseInt(x.code); });
                     var latest_status = dt.status.getMax("code");
-                    var start_datime = new Date(parseInt(dt.start_ts*1000)).toLocaleString("en-US");
-                    var last_datime = new Date(parseInt(latest_status.utc_timestamp*1000)).toLocaleString("en-US");
+                    var start_datime = new Date(parseInt(dt.start_ts*1000)).toUTCString("en-US");
+                    var last_datime = new Date(parseInt(latest_status.utc_timestamp*1000)).toUTCString("en-US");
                     
                     // check status
                     var status = "normal";
@@ -134,7 +131,8 @@
                          { "sTitle": "Latest Update Time" },
                          { "sTitle": "Status Code"},
                          { "sTitle": "Status Description"}
-                    ]
+                    ],
+                    "order": [[ 4, "desc" ]]
                 });
 
                 // Set Table Color
@@ -154,18 +152,18 @@
                     // check if (Type, Command, Start Time) pair is correct
                     var filtered_data = input.data.filter((obj) => 
                         (obj.type == input_data[1]) && 
-                        ((new Date(parseInt(obj.start_ts*1000)).toLocaleString("en-US")) == input_data[3]));
+                        ((new Date(parseInt(obj.start_ts*1000)).toUTCString("en-US")) == input_data[3]));
 
                     var title = "<div style='font-weight: bold;'>Details Data:</div>";
                     var content = "";
                     var status = filtered_data[0]['status'];
 
-                    for(var i = 0; i < status.length; i++) {
+                    for(var i = status.length - 1; i >= 0; i--) {
                         // Using toString() will return local time
-                        dtime = new Date(parseInt(status[i].utc_timestamp*1000)).toLocaleString("en-US");
+                        dtime = new Date(parseInt(status[i].utc_timestamp*1000)).toUTCString("en-US");
                         content += "<div>received " + status[i].code + " (" + status[i].status_code_desc + ") in " + dtime + "<\div>";
                     }
-                    return '<div class="shown_table">' + title + content + '</div>';
+                    return '<div class="shown_table" style="background-color: lightgrey;">' + title + content + '</div>';
                 };
 
                 // Add event listener for opening and closing details

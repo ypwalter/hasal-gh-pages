@@ -141,7 +141,7 @@
                         var uid_list = latest_status.task_uid_list;
                         for (var i = 0; i < uid_list.length; i++) {
                             //TODO: I might no longer need to table data here
-                            table_data = ["", "Agent", uid_list[i], final_case, latest_status.code, latest_status.status_code_desc, "Time"];
+                            table_data = ["", "Agent", uid_list[i], final_case, "Time", latest_status.status_code_desc, latest_status.code];
                             return_array.push(table_data);
                         }
                     }
@@ -181,7 +181,7 @@
                     function _push_data() {
                         // This the format of data inside the table
                         table_data = [agent_dt.type, agent_dt.cmd, agent_dt.start_ts,
-                                      current_case, current_ts, (new Date(current_ts*1000).toLocaleString()),
+                                      current_case, current_ts, (new Date(current_ts*1000).toUTCString()),
                                       current_status_desc, current_status, task_uid, agent_dt.status];
                         if (! (task_uid in uid_to_status_info)) {
                             uid_to_status_info[task_uid] = [];
@@ -248,10 +248,11 @@
                              { "sTitle": "Agent" },
                              { "sTitle": "Task UID" },
                              { "sTitle": "Test Cases" },
-                             { "sTitle": "Task Status"},
-                             { "sTitle": "Task Description"},
-                             { "sTitle": "Latest Update"}
-                        ]
+                             { "sTitle": "Latest Updated Time"},
+                             { "sTitle": "Status Description"},
+                             { "sTitle": "Status"}
+                        ],
+                        "order": [[ 2, "desc" ]]
                     });
 
                     // Add event listener for opening and closing details
@@ -311,7 +312,7 @@
                                  { "sTitle": "Start Timestamp", "bVisible": false },
                                  { "sTitle": "Test Case" },
                                  { "sTitle": "Latest Timestamp", "bVisible": false },
-                                 { "sTitle": "Latest Time" },
+                                 { "sTitle": "Latest Updated Time" },
                                  { "sTitle": "Status Description", "sClass": "more" },
                                  { "sTitle": "Status"},
                                  { "sTitle": "Uid", "bVisible": false}

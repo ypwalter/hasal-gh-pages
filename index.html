@@ -178,43 +178,7 @@
                         </div>
                         <!-- /.panel-heading -->
                         <div class="panel-body">
-                            <div class="list-group">
-                                <a href="#" class="list-group-item">
-                                    <i class="fa fa-folder-open fa-fw"></i> Build Hash
-                                    <span class="pull-right text-muted small"><em>(Build Time ID)</em>
-                                    </span>
-                                </a>
-
-                                <a href="#" class="list-group-item">
-                                    <i class="fa fa-folder-open fa-fw"></i> Build Hash
-                                    <span class="pull-right text-muted small"><em>(Build Time ID)</em>
-                                    </span>
-                                </a>
-
-                                <a href="#" class="list-group-item">
-                                    <i class="fa fa-folder-open fa-fw"></i> Build Hash
-                                    <span class="pull-right text-muted small"><em>(Build Time ID)</em>
-                                    </span>
-                                </a>
-
-                                <a href="#" class="list-group-item">
-                                    <i class="fa fa-folder-open fa-fw"></i> Build Hash
-                                    <span class="pull-right text-muted small"><em>(Build Time ID)</em>
-                                    </span>
-                                </a>
-
-                                <a href="#" class="list-group-item">
-                                    <i class="fa fa-folder-open fa-fw"></i> Build Hash
-                                    <span class="pull-right text-muted small"><em>(Build Time ID)</em>
-                                    </span>
-                                </a>
-
-                                <a href="#" class="list-group-item">
-                                    <i class="fa fa-folder-open fa-fw"></i> Build Hash
-                                    <span class="pull-right text-muted small"><em>(Build Time ID)</em>
-                                    </span>
-                                </a>
-
+                            <div class="list-group" id="build_list">
                             </div>
                             <!-- /.list-group -->
                             <!-- <a href="#" class="btn btn-default btn-block">View All Alerts</a> -->
@@ -227,6 +191,8 @@
                         </div>
                         <div class="panel-body">
                             <ul>
+                                <li><a href="https://mozilla-twqa.github.io/Hasal_dashboard/" target="_blank">Hasal Dashboard (Progress)</a></li>
+                                <li><a href="https://kanru.github.io/hasal-dashboard/https://kanru.github.io/hasal-dashboard/" target="_blank">Hasal Dashboard (Perfherder)</a></li>
                                 <li><a href="pulse_trigger.html" target="_blank">Pulse Trigger Information</a></li>
                                 <li><a href="https://github.com/Mozilla-TWQA/Hasal" target="_blank">Hasal Project in Github</a></li>
                                 <li><a href="dev_op.html" target="_blank">DevOp Guidelines</a></li>
@@ -237,8 +203,8 @@
                     </div>
                     <div class="panel panel-primary">
                         <div class="panel-heading">
-                            <i class="fa fa-refresh fa-fw"></i> Page Refreshed Time: <script>document.write(new Date());</script><br />
-                            <i class="fa fa-clock-o fa-fw"></i> Data Acquired Time: <br />
+                            <i class="fa fa-refresh fa-fw"></i> Page Refreshed Time: <label><script>document.write(new Date());</script></label><br />
+                            <i class="fa fa-clock-o fa-fw"></i> Data Acquired Time: <label id="data_acquired_time"></label> <br />
                         </div>
                         <!-- /.panel-heading -->
                     </div>
@@ -269,106 +235,164 @@
                '</table>';
     }
 
-    // Load Cached Data : Agent List
-    var cached_data = cachedFetch("https://gist.githubusercontent.com/mozhasalstatus/cf4b97a3273e2f3117211a3663928133/raw/file_name_list.json?" + Date.now());
+    // Load Cached Data : Agents List
+    var current_timestamp = Date.now();
+    var agents_list_url = "https://gist.githubusercontent.com/mozhasalstatus/cf4b97a3273e2f3117211a3663928133/raw/file_name_list.json?" + parseInt(current_timestamp/400000);
+    var cached_agents_list = cachedFetch(agents_list_url);
+    var data_acquired_time = getCachedTime(agents_list_url);
 
-    cached_data.then(function(input){
-        // console.log(input);
-        // Create data for table to show
-        //                         [0     , 1    , 2          , 3     , 4         , 5            , 6            , 7      ]
-        // Current Output Format: [[(None), Agent, Latest Task, Status, Disk Usage, Latest Active, Error/Warning, Timeout]*n]
-        var agents_list = Object.keys(input);
-        var output = [];
-
-        // Build up data arrar for the table
-        for(var i = 0; i < agents_list.length; i++) {
-            var agent_data = new Array(7);
-
-            // Get the agent name
-            var agent_name = agents_list[i];
-
-            // Get the latest active time for the agent
-            var updated_at = parseInt(input[agent_name]["recently"]["updated_at"]*1000);
-            var latest_active = new Date(parseInt(input[agent_name]["recently"]["updated_at"]*1000)).toUTCString("en-US");
-
-            // Finalized data set for this specific agent
-            agent_data[0] = null;
-            agent_data[1] = agent_name; 
-            agent_data[2] = null;
-            agent_data[3] = null;
-            agent_data[4] = null;
-            agent_data[5] = latest_active;
-            agent_data[6] = 0;
-            agent_data[7] = ((Date.now() - updated_at) > 86400000) ? -1 : 0;
-            output.push(agent_data);
-        }
-        // console.log(output);
-
-        // Set current agents count
-        var total_agent = output.length;
-        var active_agent = output.length;
-        for(var i = 0; i < output.length; i++) {
-            active_agent += output[i][7];
-        }
-        document.getElementById("agent_count").innerText = active_agent + " / " + total_agent;
-
-        $(document).ready(function() {
-            // Entry point of agent data
-            var table = $('#dataTables').DataTable({
-              "aaData": output,
-              "aoColumns": [
-                  {
-                      "className":      "details-control",
-                      "orderable":      false,
-                      "data":           null,
-                      "defaultContent": '<i class="fa fa-hand-o-right fa-fw fa-2x" style="text-align:center;"></i>'
-                  },
-                  { "sTitle": "Agent" },
-                  { "sTitle": "Latest Task" },
-                  { "sTitle": "Status" },
-                  { "sTitle": "Disk Usage" },
-                  { "sTitle": "Latest Active" },
-                  { "sTitle": "Error / Warning" }
-              ],
-              "iDisplayLength": 50
-            });
-
-            // Set Table Color and Reorder
-            var output_length = output.length;
-            for(var i = 0; i < output_length; i++) {
-                if(output[i][7] == (-1)) {
-                    $( "#dataTables tr:nth-child(" + (i+1) + ")" ).css( "background-color", "#f19a88" );
-                }
-            }
-            table.order( [ 5, 'desc' ] ).draw();
-
-            // Add event listener for opening and closing details
-            $('#dataTables tbody').on('click', 'td.details-control', function () {
-                var tr = $(this).closest('tr');
-                var row = table.row( tr );
-
-                // Hide all shown details
-                    console.log(page + ": hide shown columns")
-                $(".shown_table").parent().hide();
-                $(".shown").removeClass('shown');
-
-                if ( row.child.isShown() ) {
-                    // This row is already open - close it
-                    row.child.hide();
-                    tr.removeClass('shown');
-                } else {
-                    // Open this row
-                    console.log(page + ": show selected column")
-                    row.child( format(row.data()) ).show();
-                    tr.addClass('shown');
-                }
-            } );
+    // Wait for document loaded and set data acquired time
+    $(document).ready(function() {
+        data_acquired_time.then(function(timestamp){
+            document.getElementById("data_acquired_time").innerText = new Date(timestamp);
         });
     });
 
+    // Started to handle data when agents list acquired
+    cached_agents_list.then(function(input){
+        // Create data for table to show
+        //                         [0     , 1    , 2          , 3     , 4         , 5            , 6            , 7      ]
+        // Current Output Format: [[(None), Agent, Latest Task, Status, Disk Usage, Latest Active, Error/Warning, Timeout]*n]
+        //// console.log(input);
+        var agents_list = Object.keys(input);
+        var output = [];
+
+        // Started to acquire all agent data
+        var agents_obj_list = new Array(agents_list.length);
+        for(var i = 0; i < agents_list.length; i++) {
+            agents_obj_list[i] = cachedFetch(input[agents_list[i]]["recently"]["raw_url"] + "?" + parseInt(current_timestamp/400000));
+        }
+
+        Promise.all(agents_obj_list).then(function(agents_obj_data){
+            console.log(page + ": All the agents' data successfully fetched.");
+
+            // Get latest action related information from each agent data file
+            var agent_latest_action = new Array(agents_list.length);
+            for(var i = 0; i < agents_list.length; i++) {
+                agent_latest_action[i] = jQuery.map(agents_obj_data[i], function(data, i) {
+                    if(data.length == 0) {
+                        console.log(page + ": " + agents_list[i] + " data error!");
+                    }
+                    var latest_task = data.getMax("utc_timestamp");
+                    var latest_status = latest_task.status.getMax("utc_timestamp");
+                    return {"utc_timestamp": latest_task.start_ts, "cmd": latest_task.cmd, "code": latest_status.code, "description": latest_status.status_code_desc};
+                });
+            }
+
+            // Build up data array for the table
+            for(var i = 0; i < agents_list.length; i++) {
+                var agent_table_data = new Array(8);
+
+                // Get the agent information
+                var agent_name = agents_list[i];
+                var agent_cmd = agent_latest_action[i][0]["cmd"];
+                var agent_desc = agent_latest_action[i][0]["description"];
+                var agent_disk = null;
+
+                // Get the latest active time for the agent
+                var updated_at = parseInt(input[agent_name]["recently"]["updated_at"]*1000);
+                var latest_active = new Date(parseInt(input[agent_name]["recently"]["updated_at"]*1000)).toUTCString("en-US");
+
+                // Finalized data set for this specific agent
+                agent_table_data[0] = null;
+                agent_table_data[1] = agent_name; 
+                agent_table_data[2] = agent_cmd;
+                agent_table_data[3] = agent_desc;
+                agent_table_data[4] = agent_disk;
+                agent_table_data[5] = latest_active;
+                agent_table_data[6] = 0;
+                agent_table_data[7] = ((Date.now() - updated_at) > 86400000) ? -1 : 0;
+                output.push(agent_table_data);
+            }
+
+            // Set current active agents count
+            var total_agent = output.length;
+            var active_agent = output.length;
+            for(var i = 0; i < output.length; i++) {
+                active_agent += output[i][7];
+            }
+            document.getElementById("agent_count").innerText = active_agent + " / " + total_agent;
+
+            $(document).ready(function() {
+                // Entry point of agent data
+                var table = $('#dataTables').DataTable({
+                  "aaData": output,
+                  "aoColumns": [
+                      {
+                          "className":      "details-control",
+                          "orderable":      false,
+                          "data":           null,
+                          "defaultContent": '<i class="fa fa-hand-o-right fa-fw fa-2x" style="text-align:center;"></i>'
+                      },
+                      { "sTitle": "Agent" },
+                      { "sTitle": "Latest Task" },
+                      { "sTitle": "Status" },
+                      { "sTitle": "Disk Usage" },
+                      { "sTitle": "Latest Active" },
+                      { "sTitle": "Error / Warning" }
+                  ],
+                  "iDisplayLength": 50
+                });
+
+                // Set Table Color and Reorder
+                var output_length = output.length;
+                for(var i = 0; i < output_length; i++) {
+                    if(output[i][7] == (-1)) {
+                        $( "#dataTables tr:nth-child(" + (i+1) + ")" ).css( "background-color", "#f19a88" );
+                    }
+                }
+                table.order( [ 5, 'desc' ] ).draw();
+
+                // Add event listener for opening and closing details
+                $('#dataTables tbody').on('click', 'td.details-control', function () {
+                    var tr = $(this).closest('tr');
+                    var row = table.row( tr );
+
+                    // Hide all shown details
+                        console.log(page + ": hide shown columns")
+                    $(".shown_table").parent().hide();
+                    $(".shown").removeClass('shown');
+
+                    if ( row.child.isShown() ) {
+                        // This row is already open - close it
+                        row.child.hide();
+                        tr.removeClass('shown');
+                    } else {
+                        // Open this row
+                        console.log(page + ": show selected column")
+                        row.child( format(row.data()) ).show();
+                        tr.addClass('shown');
+                    }
+                } );
+            });
+        });
+    });
+
+    var pulse_trigger_url = "https://gist.githubusercontent.com/mozhasalbuildstatus/24b3b2362138a71a6c3e3d0aedcb5f9a/raw/w10-hp-r1-1_recently.json?" + parseInt(current_timestamp/500000);
+    var pulse_trigger_info = cachedFetch(pulse_trigger_url);
+    var build_list_template = '<a href="#" class="list-group-item"><i class="fa fa-folder-open fa-fw"></i> Build Hash <span class="pull-right text-muted small"><em>(Build Time ID)</em></span></a>'
+
+    // Start to get builds' list
+    pulse_trigger_info.then(function(input){
+        var latest_builds = input.data.filter(function (i) {
+            return i.start_ts*1000 > (Date.now()-86400000*3);
+        });
+
+        // find all the non-duplicated build
+        var builds_list = [];
+        for(var i = 0; i < latest_builds.length; i++) {
+            for(var j = 0; j < latest_builds[i]["status"].length; j++) {
+                if(latest_builds[i]["status"][j]["code"] == "900") {
+                    var build_id = deepFind(latest_builds[i]["status"][j], "cmd_config.DOWNLOAD_REVISION");
+                    if(builds_list.indexOf(build_id) < 0) {
+                        builds_list.push(build_id);
+                    }
+                }
+            }
+        }
+    });
 
     </script>
-
 </body>
 
 </html>

@@ -18,11 +18,24 @@ function cachedFetch(url, expireTime = 3600000) {
             })
         })
     } else {
-      console.log(filename + ": Getting it directly from the cache")
+      console.log(filename + ": Getting " + url + " directly from cache")
       return localforage.getItem(url)
         .then(function(entry){
           return entry['data'];
         })
+    }
+  })
+}
+
+function getCachedTime(url) {
+  console.log(filename + ": Getting " + url + " acquired time.");
+  return localforage.getItem(url).then(function(value){
+    if(value == null) {
+      console.log(filename + ": " + url + " timestamp just created. Return current time.")
+      return Date.now();
+    } else {
+      console.log(filename + ": " + url + " cached timestamp found and will be returned.")
+      return value.updated;
     }
   })
 }

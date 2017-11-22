@@ -9,10 +9,6 @@ if(page == "") {
 var agent_name = get_request("agent");
 console.log(page + ": acquire agent name - " + agent_name);
 
-// get build name
-var build_id = get_request("build");
-console.log(page + ": acquire build id - " + build_id);
-
 // adding getMax and getMin for Array
 Array.prototype.getMin = function(attrib) {
     return this.reduce(function(prev, curr){ 

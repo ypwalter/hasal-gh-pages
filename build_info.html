@@ -38,6 +38,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.4.0/localforage.min.js"></script>
     <script src="js\cachedFetch.js"></script>
 
+    <script>
+        // get build name
+        var build_id = get_request("build");
+        console.log(page + ": acquire build id - " + build_id);
+        // get build date
+        var build_date = get_request("date");
+        console.log(page + ": acquire build id - " + build_date);
+    </script>
 </head>
 
 <body>
@@ -47,8 +55,7 @@
     <div class="alert alert-success" style="font-size:18px; width: 80%; margin:0px auto;">
         <ul>
             <li>Build Hash: <script>document.write(build_id);</script></li>
-            <li>Build Date: </li>
-            <li>Build Commit: </li>
+            <li>Build Date: <script>document.write(build_date);</script></li> 
         </ul>
     </div>
     <br/>

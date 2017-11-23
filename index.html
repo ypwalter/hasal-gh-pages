@@ -227,7 +227,7 @@
         return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px; style="background-color: lightgrey;" class="shown_table">'+
                  '<tr>'+
                    '<td style="font-weight: bold;">Details Data of ' + 
-                     '<a href="host_newobj.html?agent=' + input_data[1] + '" target="_blank">' +
+                     '<a href="host.html?agent=' + input_data[1] + '" target="_blank">' +
                        input_data[1] +
                      '</a>:' +
                    '</td>'+
@@ -251,8 +251,8 @@
     // Started to handle data when agents list acquired
     cached_agents_list.then(function(input){
         // Create data for table to show
-        //                         [0     , 1    , 2          , 3     , 4         , 5            , 6            , 7      ]
-        // Current Output Format: [[(None), Agent, Latest Task, Status, Disk Usage, Latest Active, Error/Warning, Timeout]*n]
+        //                         [0     , 1    , 2          , 3     , 4         , 5            , 6            , 7             ]
+        // Current Output Format: [[(None), Agent, Latest Task, Status, Disk Usage, Latest Active, Error/Warning, Active Counter]*n]
         //// console.log(input);
         var agents_list = Object.keys(input);
         var output = [];
@@ -277,7 +277,6 @@
                     // TODO: May have multiple status with the same latest timestamp
                     var latest_task = data.getMax("utc_timestamp");
                     var latest_status = latest_task.status.getMax("utc_timestamp");
-                    console.log(latest_task);
                     return {"utc_timestamp": latest_task.start_ts, "cmd": latest_task.cmd, "code": latest_status.code, "description": latest_status.status_code_desc, "full_data": latest_task};
                 });
             }

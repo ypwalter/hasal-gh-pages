@@ -361,7 +361,7 @@
                     var row = table.row( tr );
 
                     // Hide all shown details
-                        console.log(page + ": hide shown columns")
+                    console.log(page + ": hide shown columns")
                     $(".shown_table").parent().hide();
                     $(".shown").removeClass('shown');
 
@@ -416,7 +416,7 @@
 
     // return build_list_row
     function get_build_row(revision, time) {
-      return '<a href="build_info.html?build=' + revision + '&date=' + time +
+      return '<a href="build_info.html?date=' + time + '&build=' + revision +
              '" class="list-group-item" target="_blank"><i class="fa fa-folder-open fa-fw"></i>' + time + 
              '<span class="pull-right text-muted small"><em style="font-size:10px;">' + revision + '</em></span></a>';
     }
@@ -445,7 +445,7 @@
                 }
             }
 
-            document.getElementById("build_list").innerHTML = builds_list.reverse().join("\n");
+            document.getElementById("build_list").innerHTML = builds_list.sort().reverse().join("\n");
             console.log(page + ": Builds list created successfully.");
         });
     });

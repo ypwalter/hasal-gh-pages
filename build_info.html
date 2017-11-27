@@ -117,6 +117,7 @@
 
 
             cached_agents_list.then(function(input) {
+                console.log(page + ": finished loading the agents list");
                 var agents_list = Object.keys(input);
 
                 // Started to acquire all agent data
@@ -128,59 +129,17 @@
                 Promise.all(agents_obj_list).then(function(agent_data_objs) {
                     console.log(page + ": got cached agent data for processing");
 
+                    // BEGIN handling agent data
                     // Merge all the agents' data
+                    console.log(page + ": start handling agent data");
                     var agent_data = []
-                    for(var i = 0; i < agent_data_objs.length; i++) {
+                    for(let i = 0; i < agent_data_objs.length; i++) {
+                        for(let j = 0; j < agent_data_objs[i].data.length; j++) {
+                            agent_data_objs[i].data[j]['agent'] = agents_list[i];
+                        }
                         agent_data = agent_data.concat(agent_data_objs[i].data);
                     }
 
-                    // BEGIN handling pulse trigger data
-                    var latest_trigger_status = jQuery.map(pulse_data.data, function(trigger_dt, i) {
-                        // get latest status of each set of status
-                        var latest_status = trigger_dt.status.getMax("utc_timestamp");
-
-                        // get build information and cases list
-                        var build_info = "";
-                        var case_list = [];
-                        if ("cmd_config" in latest_status) {
-                            if ("DOWNLOAD_REVISION" in latest_status["cmd_config"]) {
-                                build_info = latest_status["cmd_config"]["DOWNLOAD_REVISION"];
-                            }
-                            if ("OVERWRITE_HASAL_SUITE_CASE_LIST" in latest_status["cmd_config"]) {
-                                case_list = latest_status["cmd_config"]["OVERWRITE_HASAL_SUITE_CASE_LIST"];
-                            }
-                        } else {
-                            return [];
-                        }
-
-                        // make test cases readable if possible (not currently using this)
-                        // TODO: need to have a better logic here
-                        var final_case = "";
-                        if((case_list.length == 2)) {
-                            case_path = case_list[0].split(".");
-                            case_type = case_path[1];
-                            full_case_name_list = case_path[3].split("_");
-                            full_case_name_list.splice(0, 2);
-                            case_name = full_case_name_list.join([separator = "_"]);
-                            final_case = case_type + ":" + case_name; 
-                        }
-
-                        // separate by UID
-                        var return_array = [];
-                        if (("task_uid_list" in latest_status) && (build_info != "")) {
-                            var uid_list = latest_status.task_uid_list;
-                            for (var i = 0; i < uid_list.length; i++) {
-                                //TODO: I might no longer need to table data here
-                                table_data = ["", "Agent", uid_list[i], final_case, "Time", latest_status.status_code_desc, latest_status.code];
-                                return_array.push(table_data);
-                            }
-                        }
-
-                        return return_array;
-                    });
-                    // END handling trigger data
-
-                    // BEGIN handling agent data
                     // lookup dict for task uid
                     for(var i = 0; i < agent_data.length; i++) {
                         set = agent_data[i];
@@ -204,15 +163,14 @@
                             return [];
                         }
 
-                        // TODO: need to handle from file name later
-                        var agent_name = "";
-
                         // TODO: need to put a note on format later
                         function _push_data() {
                             // This the format of data inside the table
+                            
                             table_data = [agent_dt.type, agent_dt.cmd, agent_dt.start_ts,
                                           current_case, current_ts, (new Date(current_ts*1000).toUTCString()),
-                                          current_status_desc, current_status, task_uid, agent_dt.status];
+                                          current_status_desc, current_status, task_uid, agent_dt.status,
+                                          agent_dt.agent];
                             if (! (task_uid in uid_to_status_info)) {
                                 uid_to_status_info[task_uid] = [];
                             }
@@ -233,34 +191,80 @@
                         var current_status = -1;
                         var current_status_desc = "";
                         var current_ts = -1;
-                        agent_dt.status.sort((a, b) => (a.utc_timestamp <= b.utc_timestamp) ? -1 : 1);
+                        agent_dt.status.sort((a, b) => (a.utc_timestamp > b.utc_timestamp) ? -1 : 1);
                         for (var i = 0; i < agent_dt.status.length; i++) {
                             status_data = agent_dt.status[i];
-                            if (status_data.code > current_status) {
-                                if("case_name" in status_data) {
-                                    current_case = status_data["case_name"];
-                                }
+                            if ((status_data.utc_timestamp > current_ts) ||
+                                   ((status_data.utc_timestamp == current_ts)&&(status_data.code > current_status))) {
                                 current_status = status_data.code;
                                 current_status_desc = status_data.status_code_desc;
                                 current_ts = status_data.utc_timestamp;
-                            } else {
-                                if (status_data.code == 100) {
-                                    _push_data();
-                                    _reset_variables();
-                                }
-                                if("case_name" in status_data) {
-                                    current_case = status_data["case_name"];
-                                }
+                            }
+                            if("case_name" in status_data) {
+                                current_case = status_data["case_name"];
                             }
                         }
 
                         if (current_ts != (-1)) {
                             _push_data();
+                            _reset_variables();
                         }
 
                         return return_array;
                     });
                     // END handling agent data
+
+                    // BEGIN handling pulse trigger data
+                    console.log(page + ": start handling pulse data");
+                    var latest_trigger_status = jQuery.map(pulse_data.data, function(trigger_dt, i) {
+                        // get latest status of each set of status
+                        var latest_status = trigger_dt.status.getMax("utc_timestamp");
+
+                        // get build information and cases list
+                        var build_info = "";
+                        var case_list = [];
+                        if ("cmd_config" in latest_status) {
+                            if ("DOWNLOAD_REVISION" in latest_status["cmd_config"]) {
+                                // filter based on input revision
+                                // if build hash is not assigned, all information in the file will be listed.
+                                // otherwise, only matching build hash can be processed
+                                // build_info = latest_status["cmd_config"]["DOWNLOAD_REVISION"];
+                                if (typeof build_id == 'undefined') {
+                                    build_info = latest_status["cmd_config"]["DOWNLOAD_REVISION"];
+                                } else if (build_id == latest_status["cmd_config"]["DOWNLOAD_REVISION"]) {
+                                    build_info = latest_status["cmd_config"]["DOWNLOAD_REVISION"];
+                                } else {
+                                    return [];
+                                }
+                            }
+                            if ("OVERWRITE_HASAL_SUITE_CASE_LIST" in latest_status["cmd_config"]) {
+                                case_list = latest_status["cmd_config"]["OVERWRITE_HASAL_SUITE_CASE_LIST"];
+                            }
+                        } else {
+                            return [];
+                        }
+
+                        // separate by UID
+                        let return_array = [];
+                        if (("task_uid_list" in latest_status) && (build_info != "")) {
+                            let uid_list = latest_status.task_uid_list;
+                            let uid_split = uid_list[0].split(".");
+                            let test_case = uid_split[uid_split.length - 2];
+                            for (var i = 0; i < uid_list.length; i++) {
+                                // build up the table rows
+                                let agent_name = "";
+                                if(uid_list[i] in uid_to_status_info) {
+                                    let agent_status_info = uid_to_status_info[uid_list[i]];
+                                    agent_name = agent_status_info[0][10];
+                                }
+                                let table_data = ["", agent_name, uid_list[i], test_case, "Time", latest_status.status_code_desc, latest_status.code];
+                                return_array.push(table_data);
+                            }
+                        }
+
+                        return return_array;
+                    });
+                    // END handling trigger data
 
                     // Table: wait till document ready and start to construct table
                     $(document).ready(function() {
@@ -330,11 +334,12 @@
                         });
 
                         // Subarea: fill detailed data
-                        var table2;
+                        let table2;
                         function fill_data (input_column) {
-                            var task_uid = input_column[2];
+                            let task_uid = input_column[2];
+                            let task_uid_hash = task_uid.hashCode();
 
-                            table2 = $('#detailedTable').DataTable({
+                            table2 = $('#detailedTable' + task_uid_hash).DataTable({
                                 "aaData": uid_to_status_info[task_uid],
                                 "aoColumns": [
                                      { "sTitle": "Type" },
@@ -359,14 +364,16 @@
 
                         // Subarea: Detailed datatable
                         function format (input_column) {
-                            var task_uid = input_column[2];;
-                            detailed_table = '<table id="detailedTable" class="table table-bordered table-hover" cellspacing="0" width="100%"><thead><tr>' +
+                            let task_uid = input_column[2];
+                            let task_uid_hash = task_uid.hashCode();
+
+                            detailed_table = '<table id="detailedTable' + task_uid_hash + '" class="table table-bordered table-hover" cellspacing="0" width="100%"><thead><tr>' +
                                              '<th></th> <th></th> <th></th> <th></th> <th></th>' +
                                              '<th></th> <th></th> <th></th> <th></th>' +
                                              '</tr></thead></table>';
 
                             // return created information area
-                            return '<div><br/>' + detailed_table + '</div>';
+                            return '<div class="shown_table"><br/>' + detailed_table + '</div>';
                         };
 
                     });

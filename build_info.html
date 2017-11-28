@@ -153,7 +153,7 @@
                     }
 
                     var latest_agent_status = jQuery.map(agent_data, function(agent_dt, i) {
-                        var return_array = [];
+                        let return_array = [];
 
                         // get task uid
                         var task_uid = ""
@@ -186,7 +186,7 @@
                             current_ts = -1;
                         }
 
-                        // check if multiple status exists
+                        // TODO: might need to check if multiple status exists
                         var current_case = "";
                         var current_status = -1;
                         var current_status_desc = "";
@@ -246,6 +246,13 @@
 
                         // separate by UID
                         let return_array = [];
+                        function sort_function(a, b) {
+                            if(a[4] == b[4]) {
+                                return 0;
+                            } else {
+                                return (a[4] < b[4]) ? -1 : 1;
+                            }
+                        }
                         if (("task_uid_list" in latest_status) && (build_info != "")) {
                             let uid_list = latest_status.task_uid_list;
                             let uid_split = uid_list[0].split(".");
@@ -256,8 +263,10 @@
                                 if(uid_list[i] in uid_to_status_info) {
                                     let agent_status_info = uid_to_status_info[uid_list[i]];
                                     agent_name = agent_status_info[0][10];
+                                    agent_status_info.sort(sort_function);
+                                    latest_update_time = (new Date(parseInt(agent_status_info[agent_status_info.length-1][4])*1000).toUTCString());
                                 }
-                                let table_data = ["", agent_name, uid_list[i], test_case, "Time", latest_status.status_code_desc, latest_status.code];
+                                let table_data = ["", agent_name, uid_list[i], test_case, latest_update_time, latest_status.status_code_desc, latest_status.code];
                                 return_array.push(table_data);
                             }
                         }
@@ -350,7 +359,8 @@
                                      { "sTitle": "Latest Updated Time" },
                                      { "sTitle": "Status Description", "sClass": "more" },
                                      { "sTitle": "Status"},
-                                     { "sTitle": "Uid", "bVisible": false}
+                                     { "sTitle": "Uid", "bVisible": false},
+                                     { "sTitle": "Agent Name", "bVisible": false}
                                 ],
                                 "order": [[ 5, "asc" ]],
                                 "autoWidth": false,

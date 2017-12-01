@@ -31,6 +31,7 @@
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.js"></script>
@@ -100,6 +101,25 @@
         </div>
     </div>
 
+    <script>
+        $('body').block( {  
+            message : '<h1> Loading Data from Remote ... </h1>',
+            css : {  
+                border: 'none',
+                padding: '15px',
+                backgroundColor: '#000',
+                '-webkit-border-radius': '10px',
+                '-moz-border-radius': '10px',
+                opacity: .5,
+                color: '#fff',
+                position: 'fixed',
+                margin: 'auto'
+            },
+            centerY: false,
+            centerX: false
+        });
+    </script>
+
     <!-- load agent data and translated to new object format-->
     <script>
 
@@ -140,7 +160,7 @@
                         var last_datime = new Date(parseInt(latest_status.utc_timestamp*1000)).toUTCString("en-US");
                             
                         // check status
-                        var status = "normal";
+                        let status = "normal";
                         if (latest_status.code != "900") {
                             var time_diff = Date.now() - latest_status.utc_timestamp;
                             if ( time_diff > 1000 * 60 * 60 * 12 ) {
@@ -150,7 +170,12 @@
                             }
                         }
 
-                        return [["", dt.type, dt.cmd, start_datime, last_datime, latest_status.code, latest_status.status_code_desc, dt, status]];
+                        let latest_status_code_desc = "";
+                        if (latest_status.status_code_desc) {
+                            latest_status_code_desc = latest_status.status_code_desc;
+                        }
+
+                        return [["", dt.type, dt.cmd, start_datime, last_datime, latest_status.code, latest_status_code_desc, dt, status]];
                     });
 
                     // Entry point of agent data
@@ -171,6 +196,9 @@
                              { "sTitle": "Task Description"}
                         ]
                     });
+
+                    // Disabled Jquery blockUI
+                    $.unblockUI();
 
                     // Subarea: Detailed data
                     function format ( input_data ) {
@@ -218,7 +246,7 @@
 
                         // open a popup window
                         console.log(page + ": open a popup window for status to be output");
-                        var win = window.open("statusInfo", "statusInfo", "width=600, height=400, toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no, titlebar=no" );
+                        var win = window.open("statusInfo", "statusInfo", "width=600, height=400");
                         var doc = win.document;
                         doc.open("application/json");
 

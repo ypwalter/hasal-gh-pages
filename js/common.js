@@ -7,7 +7,9 @@ if(page == "") {
 
 // get agent name
 var agent_name = get_request("agent");
-console.log(page + ": acquire agent name - " + agent_name);
+if(agent_name != "") {
+    console.log(page + ": acquire agent name - " + agent_name);
+}
 
 // adding getMax and getMin for Array
 Array.prototype.getMin = function(attrib) {
@@ -55,15 +57,15 @@ function finder(cmp, arr, getter) {
 // checkNested(test, 'level1', 'level2', 'level3');
 
 function checkNested(obj /*, level1, level2, ... levelN*/) {
-  var args = Array.prototype.slice.call(arguments, 1);
+    var args = Array.prototype.slice.call(arguments, 1);
 
-  for (var i = 0; i < args.length; i++) {
-    if (!obj || !obj.hasOwnProperty(args[i])) {
-      return false;
+    for (var i = 0; i < args.length; i++) {
+        if (!obj || !obj.hasOwnProperty(args[i])) {
+            return false;
+        }
+        obj = obj[args[i]];
     }
-    obj = obj[args[i]];
-  }
-  return obj;
+    return obj;
 }
 
 // This is used to translate data ( Shako's old format )

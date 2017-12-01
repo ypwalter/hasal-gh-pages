@@ -25,6 +25,7 @@
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.js"></script>
@@ -49,7 +50,6 @@
 </head>
 
 <body>
-
     <div id="title">Build Information</div>
 
     <div class="alert alert-success" style="font-size:18px; width: 80%; margin:0px auto;">
@@ -90,6 +90,25 @@
             <!-- /.panel-heading -->
         </div>
     </div>
+
+    <script>
+        $('body').block( {  
+            message : '<h1> Loading Data from Remote ... </h1>',
+            css : {  
+                border: 'none',
+                padding: '15px',
+                backgroundColor: '#000',
+                '-webkit-border-radius': '10px',
+                '-moz-border-radius': '10px',
+                opacity: .5,
+                color: '#fff',
+                position: 'fixed',
+                margin: 'auto'
+            },
+            centerY: false,
+            centerX: false
+        });
+    </script>
 
     <script>
         var build_list = [];
@@ -299,6 +318,9 @@
                             "order": [[ 2, "desc" ]]
                         });
 
+                        // Disabled Jquery blockUI
+                        $.unblockUI();
+
                         // Add event listener for opening and closing details
                         $('#dataTables tbody').on('click', 'td.details-control', function () {
                             var tr = $(this).closest('tr');
@@ -320,7 +342,7 @@
 
                                 // open a popup window
                                 console.log(page + ": open a popup window for status to be output");
-                                var win = window.open("statusInfo", "statusInfo", "width=600, height=400" );
+                                var win = window.open("statusInfo", "statusInfo", "width=600, height=400");
                                 var doc = win.document;
                                 doc.open("application/json");
 

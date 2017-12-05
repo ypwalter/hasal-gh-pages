@@ -117,7 +117,8 @@
 
         // Load Cached Data : Agents List
         var current_timestamp = Date.now();
-        var agents_list_url = "https://gist.githubusercontent.com/mozhasalstatus/cf4b97a3273e2f3117211a3663928133/raw/file_name_list.json?" + parseInt(current_timestamp/500000);
+        // var agents_list_url = "https://gist.githubusercontent.com/mozhasalstatus/cf4b97a3273e2f3117211a3663928133/raw/file_name_list.json?" + parseInt(current_timestamp/500000);
+        var agents_list_url = "https://gist.githubusercontent.com/mozhasalstatus/23c1d64642e5838900c01a3ccbbaee7c/raw/file_name_list.json?" + parseInt(current_timestamp/500000);
         var cached_agents_list = cachedFetch(agents_list_url);
         var data_acquired_time = getCachedTime(agents_list_url);
         var pulse_trigger_url = "https://gist.githubusercontent.com/mozhasalbuildstatus/24b3b2362138a71a6c3e3d0aedcb5f9a/raw/w10-hp-r1-1_recently.json?" + parseInt(current_timestamp/500000);

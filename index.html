@@ -252,7 +252,8 @@
 
     // Load Cached Data : Agents List
     var current_timestamp = Date.now();
-    var agents_list_url = "https://gist.githubusercontent.com/mozhasalstatus/cf4b97a3273e2f3117211a3663928133/raw/file_name_list.json?" + parseInt(current_timestamp/500000);
+    // var agents_list_url = "https://gist.githubusercontent.com/mozhasalstatus/cf4b97a3273e2f3117211a3663928133/raw/file_name_list.json?" + parseInt(current_timestamp/500000);
+    var agents_list_url = "https://gist.githubusercontent.com/mozhasalstatus/23c1d64642e5838900c01a3ccbbaee7c/raw/file_name_list.json?" + parseInt(current_timestamp/500000);
     var cached_agents_list = cachedFetch(agents_list_url);
     var data_acquired_time = getCachedTime(agents_list_url);
 
@@ -270,12 +271,20 @@
         // Current Output Format: [[(None), Agent, Latest Task, Status, Disk Usage, Latest Active, Error/Warning, Active Counter]*n]
         //// console.log(input);
         var agents_list = Object.keys(input);
+        var agents_list_nodata = [];
         var output = [];
 
         // Started to acquire all agent data
         var agents_obj_list = new Array(agents_list.length);
         for(var i = 0; i < agents_list.length; i++) {
-            agents_obj_list[i] = cachedFetch(input[agents_list[i]]["recently"]["raw_url"] + "?" + parseInt(current_timestamp/500000));
+            let current_agent_name = agents_list[i];
+            let agent_dict_data = input[current_agent_name];
+            if("recently" in agent_dict_data) {
+                agents_obj_list[i] = cachedFetch(agent_dict_data["recently"]["raw_url"] + "?" + parseInt(current_timestamp/500000));
+            } else {
+                agents_list_nodata.push(current_agent_name);
+                console.log(page + ": recent status url of " + current_agent_name + " not found.");
+            }
         }
 
         Promise.all(agents_obj_list).then(function(agents_obj_data){
@@ -297,20 +306,35 @@
             }
 
             // Build up data array for the table
-            for(var i = 0; i < agents_list.length; i++) {
-                var agent_table_data = new Array(9);
+            for(let i = 0; i < agents_list.length; i++) {
+                let agent_table_data = new Array(9);
+                let agent_cmd = "";
+                let agent_code = "";
+                let agent_desc = "";
+                let agent_full_data = "";
+                let agent_disk = "";
+                let update_at = "";
+                let latest_active = "";
 
                 // Get the agent information
                 var agent_name = agents_list[i];
-                var agent_cmd = agent_latest_action[i][0]["cmd"];
-                var agent_code = agent_latest_action[i][0]["code"];
-                var agent_desc = agent_latest_action[i][0]["description"];
-                var agent_full_data = agent_latest_action[i][0]["full_data"];
-                var agent_disk = null;
+                if(agent_name in agents_list_nodata) {
+                    continue;
+                }
 
-                // Get the latest active time for the agent
-                var updated_at = parseInt(input[agent_name]["recently"]["updated_at"]*1000);
-                var latest_active = new Date(parseInt(input[agent_name]["recently"]["updated_at"]*1000)).toUTCString("en-US");
+                console.log(agent_latest_action[i].length);
+                if(agent_latest_action[i].length != 0) {
+                    agent_cmd = agent_latest_action[i][0]["cmd"];
+                    agent_code = agent_latest_action[i][0]["code"];
+                    agent_desc = agent_latest_action[i][0]["description"];
+                    agent_full_data = agent_latest_action[i][0]["full_data"];
+                    agent_disk = null;
+
+                    // Get the latest active time for the agent
+                    updated_at = parseInt(input[agent_name]["recently"]["updated_at"]*1000);
+                    latest_active = new Date(parseInt(input[agent_name]["recently"]["updated_at"]*1000)).toUTCString("en-US");
+                }
+
 
                 // Finalized data set for this specific agent
                 agent_table_data[0] = null;

@@ -53,8 +53,9 @@
 
     <div class="alert alert-success" style="font-size:18px; width: 80%; margin:0px auto;">
         <ul>
-            <li>Machine IP:</li>
-            <li>Free Space:</li>
+            <li>Machine IP: <label id="machine_ip"></label> </li>
+            <li>Machine Host Name: <label id="machine_host_name"></label> </li>
+            <li>Disk Usage: <label id="used_space"></label> </li>
         </ul>
     </div>
     <br/>
@@ -125,7 +126,8 @@
 
         // Load Cached Data : Agents List
         var current_timestamp = Date.now();
-        var agents_list_url = "https://gist.githubusercontent.com/mozhasalstatus/cf4b97a3273e2f3117211a3663928133/raw/file_name_list.json?" + parseInt(current_timestamp/500000);
+        // var agents_list_url = "https://gist.githubusercontent.com/mozhasalstatus/cf4b97a3273e2f3117211a3663928133/raw/file_name_list.json?" + parseInt(current_timestamp/500000);
+        var agents_list_url = "https://gist.githubusercontent.com/mozhasalstatus/23c1d64642e5838900c01a3ccbbaee7c/raw/file_name_list.json?" + parseInt(current_timestamp/500000);
         var cached_agents_list = cachedFetch(agents_list_url);
         var data_acquired_time = getCachedTime(agents_list_url);
 
@@ -137,17 +139,33 @@
         });
 
         var cached_data;
+        var agent_info_data;
 
         cached_agents_list.then(function(input){
             if (Object.keys(input).indexOf(agent_name) >= 0) {
                 console.log(page + ": " + agent_name + " found in agent list.");
                 cached_data = cachedFetch(input[agent_name]["recently"]["raw_url"]);
+                // agent_info_data = cachedFetch(input[agent_name]["info"]["raw_url"]);
+                agent_info_data = cachedFetch("https://gist.githubusercontent.com/mozhasalstatus/35d923751221d90afc373803098bf049/raw/win10-hp-r1-9_info.json");
             } else {
                 console.log(page + ": " + agent_name + " not found in agent list.");
                 return;
             }
 
-            // wait till fulfilled and started to handle data
+            // wait till fulfilled and started to handle machine information data
+            agent_info_data.then(function(machine_info){
+                console.log(page + ": got machine information data for processing");
+                let info = machine_info.system_info_monitor;
+                console.log(machine_info);
+
+                $(document).ready(function() {
+                    document.getElementById("machine_ip").innerText = info.get_host_ip.status_content;
+                    document.getElementById("machine_host_name").innerText = info.get_host_name.status_content;
+                    document.getElementById("used_space").innerText = info.disk_usage_monitor.status_content + "%";
+                });
+            });
+
+            // wait till fulfilled and started to handle agent data
             cached_data.then(function(wrapped_data){
                 console.log(page + ": got cached data for processing");
                 var data = wrapped_data.data;

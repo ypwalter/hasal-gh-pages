@@ -31,6 +31,7 @@
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.js"></script>
@@ -49,6 +50,25 @@
 <body>
 
     <div id="title">Pulse Trigger Information</div>
+
+        <script>
+            $('body').block( {  
+                message : '<h1> Loading Data from Remote ... </h1>',
+                css : {  
+                    border: 'none',
+                    padding: '15px',
+                    backgroundColor: '#000',
+                    '-webkit-border-radius': '10px',
+                    '-moz-border-radius': '10px',
+                    opacity: .5,
+                    color: '#fff',
+                    position: 'fixed',
+                    margin: 'auto'
+                },
+                centerY: false,
+                centerX: false
+            });
+        </script>
 
     <div class="panel panel-info" style="width: 80%; margin:0px auto;">
         <div class="panel-body">
@@ -84,13 +104,15 @@
 
     <!-- load agent data and translated to new object format-->
     <script>
-        var cached_data = cachedFetch("https://ypwalter.github.io/hasal-gh-pages/data/w10-hp-r1-1_recently.json");
+        var pulse_trigger_url = "https://gist.githubusercontent.com/mozhasalstatus/6bd453e82c2aed31d9ca56021db410c8/raw/win10-hp-r1-10_recently.json?" + parseInt(current_timestamp/500000);
+        var cached_data = cachedFetch(pulse_trigger_url);
         var additional_data = [];
 
 
         // Load Cached Data : Agents List
         var current_timestamp = Date.now();
-        var agents_list_url = "https://gist.githubusercontent.com/mozhasalstatus/cf4b97a3273e2f3117211a3663928133/raw/file_name_list.json?" + parseInt(current_timestamp/500000);
+        // var agents_list_url = "https://gist.githubusercontent.com/mozhasalstatus/cf4b97a3273e2f3117211a3663928133/raw/file_name_list.json?" + parseInt(current_timestamp/500000);
+        var agents_list_url = "https://gist.githubusercontent.com/mozhasalstatus/23c1d64642e5838900c01a3ccbbaee7c/raw/file_name_list.json?" + parseInt(current_timestamp/500000);
         var cached_agents_list = cachedFetch(agents_list_url);
         var data_acquired_time = getCachedTime(agents_list_url);
 
@@ -139,9 +161,15 @@
                             }
                         }
 
+                        // Sometimes, status code description 
+                        if (latest_status.status_code_desc == null) {
+                            latest_status.status_code_desc = "";
+                        }
+
                         return [["", dt.type, dt.cmd, start_datime, last_datime, latest_status.code, latest_status.status_code_desc, status]];
                     });
 
+                    // This only build up list containing incomplete output
                     var output_error = jQuery.map(all_agents_data, function(dt, i) {
                         // var last_status_code = finder(Math.max, dt.status, function(x) { return parseInt(x.code); });
                         var latest_status = dt.status.getMax("code");
@@ -167,7 +195,7 @@
 
                     // Entry point of pulse data to table
                     var table = $('#dataTables').DataTable({
-                        "aaData": output_error,
+                        "aaData": output_full,
                         "aoColumns": [
                              {
                                  "className":      "details-control",
@@ -234,7 +262,10 @@
                             tr.addClass('shown');
                         }
                     });
-                });
+
+                    // Disabled Jquery blockUI
+                    $.unblockUI();
+                    });
 
             });
 

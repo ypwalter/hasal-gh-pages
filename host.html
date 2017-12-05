@@ -156,7 +156,6 @@
             agent_info_data.then(function(machine_info){
                 console.log(page + ": got machine information data for processing");
                 let info = machine_info.system_info_monitor;
-                console.log(machine_info);
 
                 $(document).ready(function() {
                     document.getElementById("machine_ip").innerText = info.get_host_ip.status_content;

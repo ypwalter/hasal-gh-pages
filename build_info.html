@@ -323,9 +323,12 @@
                         $.unblockUI();
 
                         // Add event listener for opening and closing details
-                        $('#dataTables tbody').on('click', 'td.details-control', function () {
+                        $('tbody').on('click', 'td.details-control', function () {
                             var tr = $(this).closest('tr');
                             var row = table.row( tr );
+                            let task_uid = row.data()[2];
+                            let task_uid_hash = task_uid.hashCode();
+                            console.log(task_uid_hash);
 
                             if ( row.child.isShown() ) {
                                 // This row is already open - close it
@@ -337,7 +340,8 @@
                                 row.child( format( row.data() ) ).show();
                                 fill_data(row.data());
                             }
-                            $('#detailedTable tbody').on('click', '.more', function () {
+
+                            $('#detailedTable' + task_uid_hash + ' tbody').on('click', '.more', function () {
                                 console.log(page + ": getting detailed status from data in the row");
                                 detailed_status = table2.row($(this).parent()).data()[9];
 
@@ -401,7 +405,7 @@
                             let task_uid = input_column[2];
                             let task_uid_hash = task_uid.hashCode();
 
-                            detailed_table = '<table id="detailedTable' + task_uid_hash + '" class="table table-bordered table-hover" cellspacing="0" width="100%"><thead><tr>' +
+                            detailed_table = '<table id="detailedTable' + task_uid_hash + '" name="detailedTable" class="table table-bordered table-hover" cellspacing="0" width="100%"><thead><tr>' +
                                              '<th></th> <th></th> <th></th> <th></th> <th></th>' +
                                              '<th></th> <th></th> <th></th> <th></th>' +
                                              '</tr></thead></table>';

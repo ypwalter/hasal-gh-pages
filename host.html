@@ -175,10 +175,11 @@
                         var start_datime = new Date(parseInt(dt.start_ts*1000)).toUTCString("en-US");
                         var last_datime = new Date(parseInt(latest_status.utc_timestamp*1000)).toUTCString("en-US");
                             
-                        // check status
+                        // error&waring status
+                        // TODO: Need to be refined.
                         let status = "normal";
                         if (latest_status.code != "900") {
-                            var time_diff = Date.now() - latest_status.utc_timestamp;
+                            var time_diff = Date.now() - latest_status.utc_timestamp*1000;
                             if ( time_diff > 1000 * 60 * 60 * 12 ) {
                                 status = "error";
                             } else if ( time_diff > 1000 * 60 * 60 * 6) {
@@ -209,7 +210,9 @@
                              { "sTitle": "Start Time" },
                              { "sTitle": "Latest Updated" },
                              { "sTitle": "Status", "sClass": "more" },
-                             { "sTitle": "Task Description"}
+                             { "sTitle": "Task Description"},
+                             { "sTitle": "Data Set", "bVisible": false },
+                             { "sTitle": "Errors Warnings", "bVisible": false }
                         ]
                     });
 

@@ -162,7 +162,7 @@
                         <div class="panel-body">
                             <table width="100%" class="table table-bordered table-hover" id="dataTables">
                                 <thead>
-                                    <tr>
+                                    <tr id="first_row">
                                         <th></th>
                                         <th>Agent</th>
                                         <th>Latest Task</th>
@@ -194,7 +194,7 @@
                     <!-- /.panel -->
                     <div class="panel panel-info">
                         <div class="panel-heading">
-                            <i class="fa fa-bar-chart-o fa-fw"></i> Builds List
+                            <i class="fa fa-bar-chart-o fa-fw"></i> Builds List (Within 72 Hours)
                         </div>
                         <!-- /.panel-heading -->
                         <div class="panel-body">
@@ -238,13 +238,22 @@
     <!-- Create Data Table : https://datatables.net/reference/option/ajax -->
     <script>
     // Table: Show Detailed data
-    function format ( input_data ) {
+    function format(input_data) {
+        console.log(input_data);
         return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px; style="background-color: lightgrey;" class="shown_table">'+
                  '<tr>'+
-                   '<td style="font-weight: bold;">Detailed Data of ' + 
+                   '<td><label>Detailed Data of ' + 
                      '<a href="host.html?agent=' + input_data[1] + '" target="_blank">' +
                        input_data[1] +
-                     '</a>' +
+                     '</a></label>:</br>' +
+                     'Number of "runtest_cmd": ' + input_data[6][0]['runtest_cmd'] + '</br>' +
+                     'Status 100 (task started): ' + input_data[6][0]['100'] + '</br>' +
+                     'Status 500 (webdriver): ' + input_data[6][0]['500'] + '</br>' +
+                     'Status 600 (tests finished without exception): ' + input_data[6][0]['600'] + '</br>' +
+                     'Latest Status 700s (reached maximum retry times): ' + input_data[6][0]['700'] + '</br>' +
+                     'Latest Status 800s (something wrong): ' + input_data[6][0]['800'] + '</br>' +
+                     'Latest Status 900 (done): ' + input_data[6][0]['900'] + '</br>' +
+                     'Latest Status 900, but with status 700s (done with retry): ' + input_data[6][0]['900but700'] + '</br>' +
                    '</td>'+
                  '</tr>'+
                '</table>';
@@ -266,9 +275,6 @@
 
     // Started to handle data when agents list acquired
     cached_agents_list.then(function(input){
-        // Create data for table to show
-        //                         [0     , 1    , 2          , 3     , 4         , 5            , 6            , 7             ]
-        // Current Output Format: [[(None), Agent, Latest Task, Status, Disk Usage, Latest Active, Error/Warning, Active Counter]*n]
         //// console.log(input);
         var agents_list = Object.keys(input);
         var agents_list_nodata = [];
@@ -294,16 +300,109 @@
 
                 console.log(page + ": Organizing agents' data.");
                 // Get latest action related information from each agent data file
-                var agent_latest_action = new Array(agents_list.length);
-                for(var i = 0; i < agents_list.length; i++) {
+                let agent_latest_action = new Array(agents_list.length);
+                let agent_numbers = new Array(agents_list.length);
+                let list_100 = new Array(agents_list.length);
+                let list_500 = new Array(agents_list.length);
+                let list_600 = new Array(agents_list.length);
+                let latest_700_list = new Array(agents_list.length);
+                let latest_800_list = new Array(agents_list.length);
+                let list_900 = new Array(agents_list.length);
+                let latest_900but700_list = new Array(agents_list.length);
+                let latest_noruntest_list = new Array(agents_list.length);
+                for(let i = 0; i < agents_list.length; i++) {
+                    // Get agent latest status(action)
                     agent_latest_action[i] = jQuery.map(agents_obj_data[i], function(data, i) {
                         if(data.length == 0) {
                             console.log(page + ": " + agents_list[i] + " data error!");
                         }
-                        // TODO: May have multiple status with the same latest timestamp
                         var latest_task = data.getMax("utc_timestamp");
                         var latest_status = latest_task.status.getMax("utc_timestamp");
                         return {"utc_timestamp": latest_task.start_ts, "cmd": latest_task.cmd, "code": latest_status.code, "description": latest_status.status_code_desc, "full_data": latest_task};
+                    });
+
+                    // Get agent latest statuses lists (run_test cmd only)
+                    agent_numbers[i] = jQuery.map(agents_obj_data[i], function(data, j) {
+                        let error_number = 0;
+                        if(data.length == 0) {
+                            console.log(page + ": " + agents_list[i] + " data error!");
+                        }
+
+                        // filter out commands with only "runtest_cmd"
+                        let runtest_data = jQuery.map(data, function(dt, k) {
+                            if(dt.cmd == "runtest_cmd") {
+                                return dt
+                            }
+                            return [];
+                        });
+
+                        // status number 100s
+                        list_100[i] = jQuery.map(runtest_data, function(dt, k) {
+                            let latest_status = dt.status.getMax("code");
+                            let result = []
+                            result = dt.status.filter(item => ((item.code == 100) && ( Date.now() - item.utc_timestamp*1000 <= 1000 * 60 * 60 * 24)));
+                            return result;
+                        });
+
+                        // status number 500s
+                        list_500[i] = jQuery.map(runtest_data, function(dt, k) {
+                            let latest_status = dt.status.getMax("code");
+                            let result = []
+                            result = dt.status.filter(item => ((item.code == 500) && ( Date.now() - item.utc_timestamp*1000 <= 1000 * 60 * 60 * 24)));
+                            return result;
+                        });
+
+                        // status number 600s
+                        list_600[i] = jQuery.map(runtest_data, function(dt, k) {
+                            let latest_status = dt.status.getMax("code");
+                            let result = []
+                            result = dt.status.filter(item => ((item.code == 600) && ( Date.now() - item.utc_timestamp*1000 <= 1000 * 60 * 60 * 24)));
+                            return result;
+                        });
+
+                        // status number 700s is latest
+                        latest_700_list[i] = jQuery.map(runtest_data, function(dt, k) {
+                            let latest_status = dt.status.getMax("code");
+                            let result = []
+                            if((latest_status.code >= 700) && (latest_status.code < 800)) {
+                                result = dt.status.filter(item => ((item.code >= 700) && (item.code < 800)) && ( Date.now() - item.utc_timestamp*1000 <= 1000 * 60 * 60 * 24));
+                            }
+                            return result;
+                        });
+
+                        // status number 800s is latest
+                        latest_800_list[i] = jQuery.map(runtest_data, function(dt, k) {
+                            let latest_status = dt.status.getMax("code");
+                            let result = []
+                            if(latest_status.code != 800) {
+                                result = dt.status.filter(item => ((item.code >= 800) && (item.code < 900)) && ( Date.now() - item.utc_timestamp*1000 <= 1000 * 60 * 60 * 24));
+                            }
+                            return result;
+                        });
+
+                        // status number 900s
+                        list_900[i] = jQuery.map(runtest_data, function(dt, k) {
+                            let latest_status = dt.status.getMax("code");
+                            let result = []
+                            result = dt.status.filter(item => ((item.code == 900) && ( Date.now() - item.utc_timestamp*1000 <= 1000 * 60 * 60 * 24)));
+                            return result;
+                        });
+
+                        // status number 900 is latest, but with 700 codes inside
+                        latest_900but700_list[i] = jQuery.map(runtest_data, function(dt, k) {
+                            let latest_status = dt.status.getMax("code");
+                            let result = []
+                            if(latest_status.code == 900) {
+                                result = dt.status.filter(item => ((item.code >= 700) && (item.code < 800)) && ( Date.now() - item.utc_timestamp*1000 <= 1000 * 60 * 60 * 24));
+                            }
+                            return result;
+                        });
+
+                        //return {'agent': agents_list[i], '700': latest_700_list[i].length, '800': latest_800_list[i].length,
+                        //        '900but700': latest_900but700_list[i].length, 'runtest_cmd': runtest_data.length};
+
+                        return {'100': list_100[i].length, '500': list_500[i].length, '600': list_600[i].length, '700': latest_700_list[i].length, '800': latest_800_list[i].length, 
+                                '900': list_900[i].length, '900but700': latest_900but700_list[i].length, 'runtest_cmd': runtest_data.length};
                     });
                 }
 
@@ -319,7 +418,7 @@
                     let latest_active = "";
 
                     // Get the agent information
-                    var agent_name = agents_list[i];
+                    let agent_name = agents_list[i];
                     if(agent_name in agents_list_nodata) {
                         continue;
                     }
@@ -329,6 +428,7 @@
                         agent_code = agent_latest_action[i][0]["code"];
                         agent_desc = agent_latest_action[i][0]["description"];
                         agent_full_data = agent_latest_action[i][0]["full_data"];
+                        counters = agent_numbers[i];
                         
                         agent_disk = agents_info_data[i].system_info_monitor.disk_usage_monitor.status_content + " %";
 
@@ -337,34 +437,40 @@
                         latest_active = new Date(parseInt(input[agent_name]["recently"]["updated_at"]*1000)).toUTCString("en-US");
                     }
 
-
                     // Finalized data set for this specific agent
+                    // Create data for table to show
+                    //                         [0     , 1    , 2          , 3     , 4         , 5            , 6            , 7             ]
+                    // Current Output Format: [[(None), Agent, Latest Task, Status, Disk Usage, Latest Active, Error/Warning, Active Counter]*n]
                     agent_table_data[0] = null;
                     agent_table_data[1] = agent_name; 
                     agent_table_data[2] = agent_cmd;
                     agent_table_data[3] = agent_desc;
                     agent_table_data[4] = agent_disk;
                     agent_table_data[5] = latest_active;
-                    agent_table_data[6] = Math.abs((((Date.now() - updated_at) > 86400000) ? -1 : 0) + ((agent_code != "900") ? -1 : 0));
-                    // This is active agent counter. When the number is less than 0, it will be marked as error.
-                    agent_table_data[7] = ((Date.now() - updated_at) > 86400000) ? -1 : 0;
-                    // TODO: need to make this a function to produce error number and error list
-                    // This is error counter. When the number is less than 0, it will be marked as error.
-                    agent_table_data[8] = (-1)*agent_table_data[6];
+                    // This is a counter.
+                    // Error is defined as:
+                    //   1. no "runtest_cmd" for past 24 hours
+                    //   2. "runtest_cmd" 800s exists for past 24 hours
+                    agent_table_data[6] = counters;
+                    // This is active agent mark.
+                    agent_table_data[7] = ((Date.now() - updated_at) > 86400000) ? "Inactive" : "Active";
                     // This stores additional information
-                    agent_table_data[9] = agent_full_data;
+                    agent_table_data[8] = agent_full_data;
                     output.push(agent_table_data);
                 }
 
-                console.log(page + ": Set active agents' number.");
                 // Set current active agents count
+                console.log(page + ": Set active agents' number.");
                 var total_agent = output.length;
                 var active_agent = output.length;
                 for(var i = 0; i < output.length; i++) {
-                    active_agent += ((output[i][7] < 0) ? -1 : 0);
+                    if(output[i][7] == "Inactive") {
+                        active_agent = active_agent - 1;
+                    }
                 }
                 document.getElementById("agent_count").innerText = active_agent + " / " + total_agent;
 
+                // This is the function to feed in lists and pop up the datatable
                 $(document).ready(function() {
                     console.log(page + ": Start to build up agents list.");
                     // Entry point of agent data
@@ -382,7 +488,9 @@
                           { "sTitle": "Status", "sClass": "more" },
                           { "sTitle": "Disk Usage" },
                           { "sTitle": "Latest Active" },
-                          { "sTitle": "Error / Warning", "bVisible": false }
+                          { "sTitle": "Error / Warning", "bVisible": false },
+                          { "sTitle": "Activity", "bVisible": false },
+                          { "sTitle": "All Information", "bVisible": false }
                       ],
                       "iDisplayLength": 50
                     });
@@ -390,13 +498,17 @@
                     // Disabled Jquery blockUI
                     $.unblockUI();
 
-                    // Set Table Color and Reorder
+                    // Set Table Color and Reorder (Warning and Error Color)
                     var output_length = output.length;
                     for(var i = 0; i < output_length; i++) {
-                        if(output[i][8] < 0) {
+                        let counter_temp = output[i][6][0];
+                        if((counter_temp["800"] > 0) || (counter_temp["runtest_cmd"] == 0)) {
                             $( "#dataTables tr:nth-child(" + (i+1) + ")" ).css( "background-color", "#f19a88" );
+                        } else if(counter_temp["700"] > 0) {
+                            $( "#dataTables tr:nth-child(" + (i+1) + ")" ).css( "background-color", "#efe443" );
                         }
                     }
+                    $( "#first_row" ).css( "background-color", "" );
                     table.order( [ 5, 'desc' ] ).draw();
 
                     // Add event listener for opening and closing details
@@ -455,6 +567,7 @@
         });
     });
 
+    // This is to get builds information and build a list
     console.log(page + ": Start to build up builds list.");
     var pulse_trigger_url = "https://gist.githubusercontent.com/mozhasalbuildstatus/24b3b2362138a71a6c3e3d0aedcb5f9a/raw/w10-hp-r1-1_recently.json?" + parseInt(current_timestamp/500000);
     var pulse_trigger_info = cachedFetch(pulse_trigger_url);

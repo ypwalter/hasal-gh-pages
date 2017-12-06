@@ -56,6 +56,8 @@
             <li>Machine IP: <label id="machine_ip"></label> </li>
             <li>Machine Host Name: <label id="machine_host_name"></label> </li>
             <li>Disk Usage: <label id="used_space"></label> </li>
+            <li>Number of latest status as 700s (within 24 hours): <label id="stat700"></label> </li>
+            <li>Number of latest status as 900 but having 700s (within 24 hours): <label id="stat900with700"></label> </li>
         </ul>
     </div>
     <br/>
@@ -169,31 +171,39 @@
                 var data = wrapped_data.data;
 
                 $(document).ready(function() {
+                    let counter_700 = 0;
+                    let counter_900but700 = 0;
                     // Transfer to array for main table to be constructed
                     var final_table = jQuery.map(data, function(dt, i) {
-                        var latest_status = dt.status.getMax("code");
-                        var start_datime = new Date(parseInt(dt.start_ts*1000)).toUTCString("en-US");
-                        var last_datime = new Date(parseInt(latest_status.utc_timestamp*1000)).toUTCString("en-US");
-                            
-                        // error&waring status
-                        // TODO: Need to be refined.
-                        let status = "normal";
-                        if (latest_status.code != "900") {
-                            var time_diff = Date.now() - latest_status.utc_timestamp*1000;
-                            if ( time_diff > 1000 * 60 * 60 * 12 ) {
-                                status = "error";
-                            } else if ( time_diff > 1000 * 60 * 60 * 6) {
-                                status = "warning";
-                            }
-                        }
+                        let latest_status = dt.status.getMax("code");
+                        let start_datime = new Date(parseInt(dt.start_ts*1000)).toUTCString("en-US");
+                        let last_datime = new Date(parseInt(latest_status.utc_timestamp*1000)).toUTCString("en-US");
+                        let counter = {};
 
                         let latest_status_code_desc = "";
                         if (latest_status.status_code_desc) {
                             latest_status_code_desc = latest_status.status_code_desc;
                         }
 
-                        return [["", dt.type, dt.cmd, start_datime, last_datime, "[" + latest_status.code + "]", latest_status_code_desc, dt, status]];
+                        //special handler for "runtest_cmd"
+                        let latest_status_code = latest_status.code;
+                        if(dt.cmd == "runtest_cmd") {
+                            result = dt.status.filter(item => ((item.code >= 700) && (item.code < 800)) && ( Date.now() - item.utc_timestamp*1000 <= 1000 * 60 * 60 * 24));
+                            if(result.length > 0) {
+                                if((latest_status.code >= 700) && (latest_status.code < 800)) {
+                                    counter_700 = counter_700 + 1;
+                                } else if(latest_status.code == 900) {
+                                    counter_900but700 = counter_900but700 + 1;
+                                    latest_status_code = "900/700";
+                                }
+                            }
+                        }
+
+                        return [["", dt.type, dt.cmd, start_datime, last_datime, "[" + latest_status_code + "]", latest_status_code_desc, dt]];
                     });
+                    document.getElementById("stat700").innerText = counter_700;
+                    document.getElementById("stat900with700").innerText = counter_900but700;
+                    
 
                     // Entry point of agent data
                     var table = $('#dataTables').DataTable({
@@ -211,8 +221,7 @@
                              { "sTitle": "Latest Updated" },
                              { "sTitle": "Status", "sClass": "more" },
                              { "sTitle": "Task Description"},
-                             { "sTitle": "Data Set", "bVisible": false },
-                             { "sTitle": "Errors Warnings", "bVisible": false }
+                             { "sTitle": "Data Set", "bVisible": false }
                         ]
                     });
 
@@ -261,7 +270,7 @@
                     $('#dataTables tbody').on('click', '.more', function () {
                         console.log(page + ": getting detailed status from data in the row");
                         current_table_data = table.row($(this).parent()).data();
-                        detailed_status = current_table_data[current_table_data.length-2]["status"];
+                        detailed_status = current_table_data[current_table_data.length-1]["status"];
 
                         // open a popup window
                         console.log(page + ": open a popup window for status to be output");

@@ -112,7 +112,7 @@
                                         <i class="fa fa-warning fa-5x"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
-                                        <div class="huge">0</div>
+                                        <div class="huge" id="warning_count"></div>
                                         <div>Warning</div>
                                     </div>
                                 </div>
@@ -134,7 +134,7 @@
                                         <i class="fa fa-times fa-5x"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
-                                        <div class="huge">0</div>
+                                        <div class="huge" id="error_count"></div>
                                         <div>Error</div>
                                     </div>
                                 </div>
@@ -499,16 +499,22 @@
                     $.unblockUI();
 
                     // Set Table Color and Reorder (Warning and Error Color)
-                    var output_length = output.length;
-                    for(var i = 0; i < output_length; i++) {
+                    let output_length = output.length;
+                    let warning_count = 0;
+                    let error_count = 0;
+                    for(let i = 0; i < output_length; i++) {
                         let counter_temp = output[i][6][0];
                         if((counter_temp["800"] > 0) || (counter_temp["runtest_cmd"] == 0)) {
+                            error_count = error_count + 1;
                             $( "#dataTables tr:nth-child(" + (i+1) + ")" ).css( "background-color", "#f19a88" );
                         } else if(counter_temp["700"] > 0) {
+                            warning_count = warning_count + 1;
                             $( "#dataTables tr:nth-child(" + (i+1) + ")" ).css( "background-color", "#efe443" );
                         }
                     }
                     $( "#first_row" ).css( "background-color", "" );
+                    document.getElementById("warning_count").innerText = warning_count;
+                    document.getElementById("error_count").innerText = error_count;
                     table.order( [ 5, 'desc' ] ).draw();
 
                     // Add event listener for opening and closing details

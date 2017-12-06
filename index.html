@@ -241,10 +241,10 @@
     function format ( input_data ) {
         return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px; style="background-color: lightgrey;" class="shown_table">'+
                  '<tr>'+
-                   '<td style="font-weight: bold;">Details Data of ' + 
+                   '<td style="font-weight: bold;">Detailed Data of ' + 
                      '<a href="host.html?agent=' + input_data[1] + '" target="_blank">' +
                        input_data[1] +
-                     '</a>:' +
+                     '</a>' +
                    '</td>'+
                  '</tr>'+
                '</table>';
@@ -276,176 +276,180 @@
 
         // Started to acquire all agent data
         var agents_obj_list = new Array(agents_list.length);
+        var agents_info_list = new Array(agents_list.length);
         for(var i = 0; i < agents_list.length; i++) {
             let current_agent_name = agents_list[i];
             let agent_dict_data = input[current_agent_name];
             if("recently" in agent_dict_data) {
                 agents_obj_list[i] = cachedFetch(agent_dict_data["recently"]["raw_url"] + "?" + parseInt(current_timestamp/500000));
+                agents_info_list[i] = cachedFetch(agent_dict_data["info"]["raw_url"] + "?" + parseInt(current_timestamp/500000));
             } else {
                 agents_list_nodata.push(current_agent_name);
                 console.log(page + ": recent status url of " + current_agent_name + " not found.");
             }
         }
+        Promise.all(agents_info_list).then(function(agents_info_data){
+            Promise.all(agents_obj_list).then(function(agents_obj_data){
+                console.log(page + ": All the agents' data successfully fetched.");
 
-        Promise.all(agents_obj_list).then(function(agents_obj_data){
-            console.log(page + ": All the agents' data successfully fetched.");
-
-            console.log(page + ": Organizing agents' data.");
-            // Get latest action related information from each agent data file
-            var agent_latest_action = new Array(agents_list.length);
-            for(var i = 0; i < agents_list.length; i++) {
-                agent_latest_action[i] = jQuery.map(agents_obj_data[i], function(data, i) {
-                    if(data.length == 0) {
-                        console.log(page + ": " + agents_list[i] + " data error!");
-                    }
-                    // TODO: May have multiple status with the same latest timestamp
-                    var latest_task = data.getMax("utc_timestamp");
-                    var latest_status = latest_task.status.getMax("utc_timestamp");
-                    return {"utc_timestamp": latest_task.start_ts, "cmd": latest_task.cmd, "code": latest_status.code, "description": latest_status.status_code_desc, "full_data": latest_task};
-                });
-            }
-
-            // Build up data array for the table
-            for(let i = 0; i < agents_list.length; i++) {
-                let agent_table_data = new Array(9);
-                let agent_cmd = "";
-                let agent_code = "";
-                let agent_desc = "";
-                let agent_full_data = "";
-                let agent_disk = "";
-                let update_at = "";
-                let latest_active = "";
-
-                // Get the agent information
-                var agent_name = agents_list[i];
-                if(agent_name in agents_list_nodata) {
-                    continue;
+                console.log(page + ": Organizing agents' data.");
+                // Get latest action related information from each agent data file
+                var agent_latest_action = new Array(agents_list.length);
+                for(var i = 0; i < agents_list.length; i++) {
+                    agent_latest_action[i] = jQuery.map(agents_obj_data[i], function(data, i) {
+                        if(data.length == 0) {
+                            console.log(page + ": " + agents_list[i] + " data error!");
+                        }
+                        // TODO: May have multiple status with the same latest timestamp
+                        var latest_task = data.getMax("utc_timestamp");
+                        var latest_status = latest_task.status.getMax("utc_timestamp");
+                        return {"utc_timestamp": latest_task.start_ts, "cmd": latest_task.cmd, "code": latest_status.code, "description": latest_status.status_code_desc, "full_data": latest_task};
+                    });
                 }
 
-                if(agent_latest_action[i].length != 0) {
-                    agent_cmd = agent_latest_action[i][0]["cmd"];
-                    agent_code = agent_latest_action[i][0]["code"];
-                    agent_desc = agent_latest_action[i][0]["description"];
-                    agent_full_data = agent_latest_action[i][0]["full_data"];
-                    agent_disk = null;
+                // Build up data array for the table
+                for(let i = 0; i < agents_list.length; i++) {
+                    let agent_table_data = new Array(9);
+                    let agent_cmd = "";
+                    let agent_code = "";
+                    let agent_desc = "";
+                    let agent_full_data = "";
+                    let agent_disk = "";
+                    let update_at = "";
+                    let latest_active = "";
 
-                    // Get the latest active time for the agent
-                    updated_at = parseInt(input[agent_name]["recently"]["updated_at"]*1000);
-                    latest_active = new Date(parseInt(input[agent_name]["recently"]["updated_at"]*1000)).toUTCString("en-US");
+                    // Get the agent information
+                    var agent_name = agents_list[i];
+                    if(agent_name in agents_list_nodata) {
+                        continue;
+                    }
+
+                    if(agent_latest_action[i].length != 0) {
+                        agent_cmd = agent_latest_action[i][0]["cmd"];
+                        agent_code = agent_latest_action[i][0]["code"];
+                        agent_desc = agent_latest_action[i][0]["description"];
+                        agent_full_data = agent_latest_action[i][0]["full_data"];
+                        
+                        agent_disk = agents_info_data[i].system_info_monitor.disk_usage_monitor.status_content + " %";
+
+                        // Get the latest active time for the agent
+                        updated_at = parseInt(input[agent_name]["recently"]["updated_at"]*1000);
+                        latest_active = new Date(parseInt(input[agent_name]["recently"]["updated_at"]*1000)).toUTCString("en-US");
+                    }
+
+
+                    // Finalized data set for this specific agent
+                    agent_table_data[0] = null;
+                    agent_table_data[1] = agent_name; 
+                    agent_table_data[2] = agent_cmd;
+                    agent_table_data[3] = agent_desc;
+                    agent_table_data[4] = agent_disk;
+                    agent_table_data[5] = latest_active;
+                    agent_table_data[6] = Math.abs((((Date.now() - updated_at) > 86400000) ? -1 : 0) + ((agent_code != "900") ? -1 : 0));
+                    // This is active agent counter. When the number is less than 0, it will be marked as error.
+                    agent_table_data[7] = ((Date.now() - updated_at) > 86400000) ? -1 : 0;
+                    // TODO: need to make this a function to produce error number and error list
+                    // This is error counter. When the number is less than 0, it will be marked as error.
+                    agent_table_data[8] = (-1)*agent_table_data[6];
+                    // This stores additional information
+                    agent_table_data[9] = agent_full_data;
+                    output.push(agent_table_data);
                 }
 
-
-                // Finalized data set for this specific agent
-                agent_table_data[0] = null;
-                agent_table_data[1] = agent_name; 
-                agent_table_data[2] = agent_cmd;
-                agent_table_data[3] = agent_desc;
-                agent_table_data[4] = agent_disk;
-                agent_table_data[5] = latest_active;
-                agent_table_data[6] = Math.abs((((Date.now() - updated_at) > 86400000) ? -1 : 0) + ((agent_code != "900") ? -1 : 0));
-                // This is active agent counter. When the number is less than 0, it will be marked as error.
-                agent_table_data[7] = ((Date.now() - updated_at) > 86400000) ? -1 : 0;
-                // TODO: need to make this a function to produce error number and error list
-                // This is error counter. When the number is less than 0, it will be marked as error.
-                agent_table_data[8] = (-1)*agent_table_data[6];
-                // This stores additional information
-                agent_table_data[9] = agent_full_data;
-                output.push(agent_table_data);
-            }
-
-            console.log(page + ": Set active agents' number.");
-            // Set current active agents count
-            var total_agent = output.length;
-            var active_agent = output.length;
-            for(var i = 0; i < output.length; i++) {
-                active_agent += ((output[i][7] < 0) ? -1 : 0);
-            }
-            document.getElementById("agent_count").innerText = active_agent + " / " + total_agent;
-
-            $(document).ready(function() {
-                console.log(page + ": Start to build up agents list.");
-                // Entry point of agent data
-                var table = $('#dataTables').DataTable({
-                  "aaData": output,
-                  "aoColumns": [
-                      {
-                          "className":      "details-control",
-                          "orderable":      false,
-                          "data":           null,
-                          "defaultContent": '<i class="fa fa-hand-o-right fa-fw fa-2x" style="text-align:center;"></i>'
-                      },
-                      { "sTitle": "Agent" },
-                      { "sTitle": "Latest Task" },
-                      { "sTitle": "Status", "sClass": "more" },
-                      { "sTitle": "Disk Usage" },
-                      { "sTitle": "Latest Active" },
-                      { "sTitle": "Error / Warning" }
-                  ],
-                  "iDisplayLength": 50
-                });
-
-                // Disabled Jquery blockUI
-                $.unblockUI();
-
-                // Set Table Color and Reorder
-                var output_length = output.length;
-                for(var i = 0; i < output_length; i++) {
-                    if(output[i][8] < 0) {
-                        $( "#dataTables tr:nth-child(" + (i+1) + ")" ).css( "background-color", "#f19a88" );
-                    }
+                console.log(page + ": Set active agents' number.");
+                // Set current active agents count
+                var total_agent = output.length;
+                var active_agent = output.length;
+                for(var i = 0; i < output.length; i++) {
+                    active_agent += ((output[i][7] < 0) ? -1 : 0);
                 }
-                table.order( [ 5, 'desc' ] ).draw();
+                document.getElementById("agent_count").innerText = active_agent + " / " + total_agent;
 
-                // Add event listener for opening and closing details
-                $('#dataTables tbody').on('click', 'td.details-control', function () {
-                    var tr = $(this).closest('tr');
-                    var row = table.row( tr );
+                $(document).ready(function() {
+                    console.log(page + ": Start to build up agents list.");
+                    // Entry point of agent data
+                    var table = $('#dataTables').DataTable({
+                      "aaData": output,
+                      "aoColumns": [
+                          {
+                              "className":      "details-control",
+                              "orderable":      false,
+                              "data":           null,
+                              "defaultContent": '<i class="fa fa-hand-o-right fa-fw fa-2x" style="text-align:center;"></i>'
+                          },
+                          { "sTitle": "Agent" },
+                          { "sTitle": "Latest Task" },
+                          { "sTitle": "Status", "sClass": "more" },
+                          { "sTitle": "Disk Usage" },
+                          { "sTitle": "Latest Active" },
+                          { "sTitle": "Error / Warning", "bVisible": false }
+                      ],
+                      "iDisplayLength": 50
+                    });
 
-                    // Hide all shown details
-                    console.log(page + ": hide shown columns")
-                    $(".shown_table").parent().hide();
-                    $(".shown").removeClass('shown');
+                    // Disabled Jquery blockUI
+                    $.unblockUI();
 
-                    if ( row.child.isShown() ) {
-                        // This row is already open - close it
-                        row.child.hide();
-                        tr.removeClass('shown');
-                    } else {
-                        // Open this row
-                        console.log(page + ": show selected column")
-                        row.child( format(row.data()) ).show();
-                        tr.addClass('shown');
+                    // Set Table Color and Reorder
+                    var output_length = output.length;
+                    for(var i = 0; i < output_length; i++) {
+                        if(output[i][8] < 0) {
+                            $( "#dataTables tr:nth-child(" + (i+1) + ")" ).css( "background-color", "#f19a88" );
+                        }
                     }
-                });
+                    table.order( [ 5, 'desc' ] ).draw();
 
-                // Add event listener for getting detailed status
-                $('#dataTables tbody').on('click', '.more', function () {
-                    console.log(page + ": getting detailed status from data in the row");
-                    current_table_data = table.row($(this).parent()).data();
-                    detailed_status = current_table_data[current_table_data.length-1]["status"];
+                    // Add event listener for opening and closing details
+                    $('#dataTables tbody').on('click', 'td.details-control', function () {
+                        var tr = $(this).closest('tr');
+                        var row = table.row( tr );
 
-                    // open a popup window
-                    console.log(page + ": open a popup window for status to be output");
-                    var win = window.open("statusInfo", "statusInfo", "width=600, height=400, toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no, titlebar=no" );
-                    var doc = win.document;
-                    doc.open("application/json");
+                        // Hide all shown details
+                        console.log(page + ": hide shown columns")
+                        $(".shown_table").parent().hide();
+                        $(".shown").removeClass('shown');
 
-                    // sort by time first and then sort by status code
-                    console.log(page + ": sort the status before output it");
-                    ordered_status = detailed_status.slice(0);
-                    ordered_status.sort(function(a, b) { 
-                        // if time is the same, sort by status code
-                        if (b.utc_timestamp == a.utc_timestamp) {
-                            return b.code - a.code;
+                        if ( row.child.isShown() ) {
+                            // This row is already open - close it
+                            row.child.hide();
+                            tr.removeClass('shown');
                         } else {
-                            return b.utc_timestamp - a.utc_timestamp;
+                            // Open this row
+                            console.log(page + ": show selected column")
+                            row.child( format(row.data()) ).show();
+                            tr.addClass('shown');
                         }
                     });
 
-                    // out put the status in JSON format with indent 4
-                    doc.write(JSON.stringify(ordered_status, null, 4));
-                    doc.close();
-                    win.focus();
+                    // Add event listener for getting detailed status
+                    $('#dataTables tbody').on('click', '.more', function () {
+                        console.log(page + ": getting detailed status from data in the row");
+                        current_table_data = table.row($(this).parent()).data();
+                        detailed_status = current_table_data[current_table_data.length-1]["status"];
+
+                        // open a popup window
+                        console.log(page + ": open a popup window for status to be output");
+                        var win = window.open("statusInfo", "statusInfo", "width=600, height=400" );
+                        var doc = win.document;
+                        doc.open("application/json");
+
+                        // sort by time first and then sort by status code
+                        console.log(page + ": sort the status before output it");
+                        ordered_status = detailed_status.slice(0);
+                        ordered_status.sort(function(a, b) { 
+                            // if time is the same, sort by status code
+                            if (b.utc_timestamp == a.utc_timestamp) {
+                                return b.code - a.code;
+                            } else {
+                                return b.utc_timestamp - a.utc_timestamp;
+                            }
+                        });
+
+                        // out put the status in JSON format with indent 4
+                        doc.write(JSON.stringify(ordered_status, null, 4));
+                        doc.close();
+                        win.focus();
+                    });
                 });
             });
         });

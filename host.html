@@ -145,8 +145,7 @@
             if (Object.keys(input).indexOf(agent_name) >= 0) {
                 console.log(page + ": " + agent_name + " found in agent list.");
                 cached_data = cachedFetch(input[agent_name]["recently"]["raw_url"]);
-                // agent_info_data = cachedFetch(input[agent_name]["info"]["raw_url"]);
-                agent_info_data = cachedFetch("https://gist.githubusercontent.com/mozhasalstatus/35d923751221d90afc373803098bf049/raw/win10-hp-r1-9_info.json");
+                agent_info_data = cachedFetch(input[agent_name]["info"]["raw_url"]);
             } else {
                 console.log(page + ": " + agent_name + " not found in agent list.");
                 return;
@@ -192,7 +191,7 @@
                             latest_status_code_desc = latest_status.status_code_desc;
                         }
 
-                        return [["", dt.type, dt.cmd, start_datime, last_datime, latest_status.code, latest_status_code_desc, dt, status]];
+                        return [["", dt.type, dt.cmd, start_datime, last_datime, "[" + latest_status.code + "]", latest_status_code_desc, dt, status]];
                     });
 
                     // Entry point of agent data

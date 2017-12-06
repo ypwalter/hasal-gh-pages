@@ -287,7 +287,7 @@
                                     agent_status_info.sort(sort_function);
                                     latest_update_time = (new Date(parseInt(agent_status_info[agent_status_info.length-1][4])*1000).toUTCString());
                                 }
-                                let table_data = ["", agent_name, uid_list[i], test_case, latest_update_time, latest_status.status_code_desc, latest_status.code];
+                                let table_data = ["", agent_name, uid_list[i], test_case, latest_update_time, latest_status.status_code_desc, "["+latest_status.code+"]"];
                                 return_array.push(table_data);
                             }
                         }
@@ -390,7 +390,7 @@
                                      { "sTitle": "Uid", "bVisible": false},
                                      { "sTitle": "Agent Name", "bVisible": false}
                                 ],
-                                "order": [[ 5, "asc" ]],
+                                "order": [[ 5, "desc" ]],
                                 "autoWidth": false,
                                 "bFilter": false,
                                 "paging": false,
